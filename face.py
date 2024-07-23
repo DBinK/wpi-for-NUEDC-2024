@@ -1,9 +1,11 @@
-import threading
 import cv2
 import time
-from loguru import logger
+import threading
 import numpy as np
+from loguru import logger
+
 from streamer import Streamer  
+from camera import find_available_cameras
 
 streamer = Streamer()
 
@@ -12,7 +14,10 @@ def process_camera_data():
     # 加载人脸检测级联分离器
     faceCascade = cv2.CascadeClassifier('data/haarcascade_frontalface_default.xml')
 
-    cam = cv2.VideoCapture(2) # 打开USB摄像头
+    available_cameras = find_available_cameras()
+
+    logger.info('正在初始化摄像头...')
+    cam = cv2.VideoCapture(available_cameras[0]) # 打开USB摄像头
 
     if not cam.isOpened():
         logger.error('无法打开摄像头设备')
@@ -21,8 +26,8 @@ def process_camera_data():
     logger.info(cam)
 
     # 降低分辨率以提高识别速度
-    #cam.set(3, 480) # 设置采集图像宽为480
-    #cam.set(4, 320) # 设置采集图像高为320
+    cam.set(3, 480) # 设置采集图像宽为480
+    cam.set(4, 320) # 设置采集图像高为320
 
     # 计算FPS（每秒帧率参数）
     start = 0
@@ -32,6 +37,8 @@ def process_camera_data():
         start = time.time()
 
         ret, img = cam.read() # 从摄像头中实时读取图像
+
+        img = cv2.rotate(img, cv2.ROTATE_180) # 旋转图像 180 度
 
         if ret:
             # 检测出所有人脸
