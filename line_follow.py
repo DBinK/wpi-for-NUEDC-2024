@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from tracemalloc import start
 import cv2
 import numpy as np
 import time

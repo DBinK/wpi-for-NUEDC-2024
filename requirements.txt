@@ -1,0 +1,4 @@
+
+pyserial==3.5
+Flask==3.0.3
+loguru==0.7.2

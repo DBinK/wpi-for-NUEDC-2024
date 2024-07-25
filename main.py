@@ -1,5 +1,6 @@
 import cv2
 import time
+import platform
 import threading
 import numpy as np
 from loguru import logger
@@ -12,7 +13,11 @@ from streamer import Streamer
 cam           = camera.Camera(400,80)
 line_follower = LineFollower()
 streamer      = Streamer()
-com           = serial.Serial('/dev/ttyUSB0', 115200)
+
+if platform.node() == 'WalnutPi':
+    com = serial.Serial('/dev/ttyS2', 115200)
+else:
+    com = serial.Serial('/dev/ttyUSB0', 115200)
 
 # 定义一个函数来处理摄像头数据
 def process_camera_data():
@@ -69,7 +74,7 @@ def process_camera_data():
             # 更新流媒体服务器的图像
             streamer.update(drawed_frame)
 
-            if angle != None:
+            if center_l != None:
                 # 发送数据到串口
                 com.write(f'{center_l}, {center_h}, {angle}'.encode('ascii'))
 
@@ -78,6 +83,8 @@ def process_camera_data():
             # 创建一个500x500像素大小的蓝色图像
             default_frame = np.full((500, 500, 3), (255, 0, 0), dtype=np.uint8) 
             streamer.update(default_frame)
+
+        time.sleep(0.01)
 
 # 创建一个线程来处理摄像头数据
 process_camera = threading.Thread(target=process_camera_data)

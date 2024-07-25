@@ -1,136 +1,54 @@
-import bluetooth
-import machine
-from neopixel import NeoPixel
-from ble_simple_peripheral import BLESimplePeripheral
-import motion
+"""
+实验名称：串口通信
+版本：v1.0
+作者：WalnutPi
+实验平台：核桃派PicoW
+说明：通过编程实现串口通信，跟电脑串口助手实现数据收发。
+"""
+import time
+from machine import UART, Pin # type: ignore
 
-class LEDController:
-    def __init__(self, pin_number, pixel_count):
-        self.pin = machine.Pin(pin_number, machine.Pin.OUT)
-        self.np = NeoPixel(self.pin, pixel_count)
-        self.colors = [
-            (255, 0, 0),  # 红色
-            (255, 165, 0),  # 橙色
-            (255, 255, 0),  # 黄色
-            (0, 255, 0),  # 绿色
-            (0, 255, 255),  # 青色
-            (0, 0, 255),  # 蓝色
-            (128, 0, 128),  # 紫色
-            (255, 255, 255),  # 白色
-        ]
-        self.timer = machine.Timer(2)
-        self.timer.init(period=500, mode=machine.Timer.PERIODIC, callback=self.rgb_flow)
+import motor
 
-    def rgb_flow(self, _):
-        global colors
-        for i in range(len(self.colors)):
-            self.np[i] = self.colors[i]
-        self.np.write()
-        self.colors.append(self.colors.pop(0))
+moto = motor.Motor()
 
-class BluetoothController:
-    def __init__(self, name='WPi-Car'):
-        self.ble = bluetooth.BLE()
-        self.ble_client = BLESimplePeripheral(self.ble, name=name)
-        self.car_sw = 0
-        self.rotate_sw = 0
-        self.rotate_mode = 0
-        self.ble_client.on_write(self.on_rx)
-        self.motion = motion.RobotController()
-        self.motion.stop()
+uart = UART(1, 115200, rx=42, tx=41)  # 设置串口号1和波特率
+KEY  = Pin(0,Pin.IN,Pin.PULL_UP) #构建KEY对象
+LED  = Pin(46,Pin.OUT) #构建LED对象,开始熄灭
 
-    def on_rx(self, text):
+line_follow = False
 
-        go_speed = 900
-        turn_speed = 500
+#LED状态翻转函数
+def fun(KEY):
+    global line_follow
+    time.sleep_ms(10) #消除抖动
+    if KEY.value()==0: #确认按键被按下
+        line_follow = not line_follow
+        LED.value(line_follow)
+
+KEY.irq(fun,Pin.IRQ_FALLING) #定义中断，下降沿触发
+
+uart.write("Hello 01Studio!")  # 发送一条数据
+print("开始串口通信")
+
+while True:
+
+    # 判断有无收到信息
+    if uart.any():
+        text = uart.read(128)  # 接收128个字符
+        decoded_data = text.decode("ascii")  # 将字节串解码为字符串 
+        values = decoded_data.split(",")   # 使用 split 方法分割字符串
+
+        center_l = int(values[0].strip())  # 转换为整数并去除空格
+        center_h = int(values[1].strip())  # 转换为整数并去除空格
+        angle    = float(values[2].strip())   # 转换为浮点数并去除空格
+
+    if line_follow:
+        moto.Motor_Control(center_l)
+        print(center_l)
         
-        try:        
-            # print("RX:", text) #打印接收到的数据
-            
-            # 回传数据给主机。
-            self.ble_client.send("I got: ")
-            self.ble_client.send(text)
-            
-            hex_data = ['{:02x}'.format(byte) for byte in text]
-            
-            print(hex_data)
-            
-            if len(hex_data) > 6:
-                
-                if (hex_data[6] == '00' or hex_data[7] == '00') and self.rotate_sw == 0 and self.car_sw == 0:
-                    self.motion.stop()
-
-                if hex_data[6] == '01':  # up
-                    self.motion.go_forward(go_speed)
-                    
-                if hex_data[6] == '02':  # down
-                    self.motion.go_backward(go_speed)
-                    
-                if hex_data[6] == '04':  # left
-                    self.motion.go_left(go_speed)
-                    
-                if hex_data[6] == '08':  # right
-                    self.motion.go_right(go_speed)
-                    
-                if hex_data[5] == '04':  # y
-                    self.motion.move(700, 200, -500)
-                    
-                if hex_data[5] == '20':  # x
-                    self.motion.move(700, -200, 500)
-
-                if hex_data[5] == '08':  # b
-                    if self.rotate_mode == 0 :
-                        self.motion.move(0, 0, -500)
-                    elif self.rotate_mode == 1 :
-                        self.motion.move(500, -600, -150)
-                    
-                if hex_data[5] == '10':  # a
-                    if self.rotate_mode == 0 :
-                        self.motion.move(0, 0, 500)
-                    elif self.rotate_mode == 1 :
-                        self.motion.move(500, 600, 150)
-                    
-                if hex_data[5] == '02':  # select
-                
-                    if self.rotate_sw == 0:
-                        self.rotate_sw = 1 
-                        self.motion.turn_right(go_speed)
-
-                    elif self.rotate_sw == 1:
-                        self.rotate_sw = 2
-                        self.motion.turn_left(go_speed)
-                        
-                    else:
-                        self.rotate_sw = 0
-                        self.motion.stop()
-                        
-                    print(f"开关小陀螺: {self.rotate_sw}")
-                    
-                if hex_data[5] == '01':  # start
-                    
-                    if self.rotate_mode == 0 :
-                        self.rotate_mode = 1 
-                    else:
-                        self.rotate_mode = 0
-                    
-                    print(f"B/A键转弯的模式: {self.rotate_mode}")
-                    """ ble_client.on_write(None)
-                    sys.exit() """
-                    
-        except (OSError, RuntimeError) as e:
-            print(f"错误原因：{e}")
-            # ble_client.on_write(None)
-            # sys.exit()
-
-class WalnutPiCar:
-    def __init__(self):
-        self.led_controller = LEDController(12, 8)
-        self.bluetooth_controller = BluetoothController()
-
-    def main(self):
-        # 主循环或初始化代码可以放在这里
-        pass
-
-if __name__ == "__main__":
-    wpicar = WalnutPiCar()
-    wpicar.main()
+    else:
+        moto.stop()
+        print("pause follow")
+    
+    time.sleep(0.01)
