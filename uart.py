@@ -7,7 +7,7 @@
 import serial,time
 
 # 配置串口
-com = serial.Serial("/dev/ttyS4", 115200)
+com = serial.Serial("/dev/ttyUSB0", 115200)
 
 #发送提示字符
 com.write(b'Hello WalnutPi!')

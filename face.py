@@ -61,20 +61,13 @@ def process_camera_data():
             # 更新流媒体服务器的图像
             streamer.update(img)
 
-            # cv2.imshow('result', img) # 显示图像
-            # key = cv2.waitKey(1) # 窗口的图像刷新时间为1毫秒，防止阻塞
-            # if key == 32: # 如果按下空格键，打断退出
-            #     break
         else:
-            # logger.error('读取摄像头失败')
+            logger.error('读取摄像头失败')
             # 创建一个500x500像素大小的蓝色图像
             default_frame = np.full((500, 500, 3), (255, 0, 0), dtype=np.uint8) 
             streamer.update(default_frame)
 
-    cam.release() # 关闭摄像头
-    cv2.destroyAllWindows() # 销毁显示摄像头视频的窗口
-
-
+# 创建一个线程来处理摄像头数据
 process_camera = threading.Thread(target=process_camera_data)
 process_camera.start()
 
