@@ -3,6 +3,7 @@ import time
 import threading
 import numpy as np
 from loguru import logger
+import serial
 
 import camera
 from line_follow import LineFollower
@@ -11,6 +12,7 @@ from streamer import Streamer
 cam           = camera.Camera(400,80)
 line_follower = LineFollower()
 streamer      = Streamer()
+com           = serial.Serial('/dev/ttyUSB0', 115200)
 
 # 定义一个函数来处理摄像头数据
 def process_camera_data():
@@ -66,6 +68,10 @@ def process_camera_data():
 
             # 更新流媒体服务器的图像
             streamer.update(drawed_frame)
+
+            if angle != None:
+                # 发送数据到串口
+                com.write(f'{center_l}, {center_h}, {angle}'.encode('ascii'))
 
         else:
             logger.error('读取摄像头失败')

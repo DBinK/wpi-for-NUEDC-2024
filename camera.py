@@ -21,8 +21,6 @@ class Camera:
         if self.contrast is not None:
             subprocess.run(["v4l2-ctl", "-c", f"contrast={contrast}"])
 
-        # self.init_camera()  # 确保在__init__之后调用
-
     def find_available_cameras(self, start_index=0, end_index=9):
         available_cameras = []
         for index in range(start_index, end_index + 1):
