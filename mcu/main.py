@@ -16,6 +16,10 @@ uart = UART(1, 115200, rx=42, tx=41)  # 设置串口号1和波特率
 KEY  = Pin(0,Pin.IN,Pin.PULL_UP) #构建KEY对象
 LED  = Pin(46,Pin.OUT) #构建LED对象,开始熄灭
 
+center_l = 0
+center_h = -1
+angle    = -1
+
 line_follow = False
 
 #LED状态翻转函数
@@ -36,7 +40,10 @@ while True:
     # 判断有无收到信息
     if uart.any():
         text = uart.read(128)  # 接收128个字符
-        decoded_data = text.decode("ascii")  # 将字节串解码为字符串 
+        decoded_data = text.decode("ascii")  # 将字节串解码为字符串
+        
+        print(decoded_data)
+        
         values = decoded_data.split(",")   # 使用 split 方法分割字符串
 
         center_l = int(values[0].strip())  # 转换为整数并去除空格
@@ -49,6 +56,6 @@ while True:
         
     else:
         moto.stop()
-        print("pause follow")
+        # print("pause follow")
     
     time.sleep(0.01)

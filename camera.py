@@ -23,6 +23,9 @@ class Camera:
 
     def find_available_cameras(self, start_index=0, end_index=9):
         available_cameras = []
+
+        logger.info(f"Cams testing.")
+
         for index in range(start_index, end_index + 1):
             cap = cv2.VideoCapture(index)
             if cap.isOpened():
@@ -41,7 +44,7 @@ class Camera:
                 self.cap = cap  
 
                 # 打印摄像头信息
-                result = subprocess.run(["v4l2-ctl", "--device=/dev/video0", "--all"], capture_output=True, text=True)
+                result = subprocess.run(["v4l2-ctl", "--all"], capture_output=True, text=True)
                 logger.info(result.stdout)
                 logger.info(f"Camera {camera_index} is initialized.")
 
@@ -54,7 +57,7 @@ class Camera:
             if not cap.isOpened():
                 raise ValueError(f"Unable to open camera {index}")
             self.cap = cap  
-            result = subprocess.run(["v4l2-ctl", "--device=/dev/video0", "--all"], capture_output=True, text=True)
+            result = subprocess.run(["v4l2-ctl", "--all"], capture_output=True, text=True)
             logger.info(result.stdout)
             logger.info(f"Camera {index} is initialized.")
 

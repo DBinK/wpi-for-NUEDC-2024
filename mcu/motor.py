@@ -36,8 +36,12 @@ class Motor:
         self.R_Motor(1)
 
     def Motor_Control(self, pixel):
-        self.L_Motor(100 + pixel*0.1)
-        self.R_Motor(100 - pixel*0.1)
+        if pixel == 0:
+            self.L_Motor(0)
+            self.R_Motor(0)
+        else:
+            self.L_Motor(200 + pixel*0.2)
+            self.R_Motor(200 - pixel*0.2)
 
 if __name__ == '__main__':
     motor = Motor()

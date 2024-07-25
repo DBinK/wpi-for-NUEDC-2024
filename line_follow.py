@@ -149,7 +149,7 @@ class LineFollower:
         self.angle    = angle
         self.delay_ms = elapsed_time
 
-        logger.debug(f"Detection took {elapsed_time:.4f} seconds.")
+        # logger.debug(f"Detection took {elapsed_time:.4f} seconds.")
         logger.debug(f"center_h: {center_h}, center_l: {center_l}, angle: {angle}")
 
         return center_h, center_l, angle

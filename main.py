@@ -15,7 +15,7 @@ line_follower = LineFollower()
 streamer      = Streamer()
 
 if platform.node() == 'WalnutPi':
-    com = serial.Serial('/dev/ttyS2', 115200)
+    com = serial.Serial('/dev/ttyS4', 115200)
 else:
     com = serial.Serial('/dev/ttyUSB0', 115200)
 
@@ -55,7 +55,7 @@ def process_camera_data():
             # for (x, y, w, h) in faces:
             #     cv2.rectangle(img, (x, y), (x+w, y+h), (0, 0, 255), 3) # 人脸画框
 
-            center_h, center_l, angle = line_follower.detect(img)              # 获取巡线中心点
+            center_h, center_l, angle = line_follower.detect(img)       # 获取巡线中心点
             drawed_frame = line_follower.draw(img, center_h, center_l)  # 绘制巡线中心点
 
             # cv2.namedWindow("src_frame", cv2.WINDOW_NORMAL)
@@ -77,6 +77,7 @@ def process_camera_data():
             if center_l != None:
                 # 发送数据到串口
                 com.write(f'{center_l}, {center_h}, {angle}'.encode('ascii'))
+                logger.info(f'发送数据到串口 {center_l}')
 
         else:
             logger.error('读取摄像头失败')

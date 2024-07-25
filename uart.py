@@ -6,10 +6,28 @@
 #导入相关模块
 import serial,time
 
-class Uart():
-    def __init__(self,device="/dev/ttyUSB0",baud=115200):
-        self.com = serial.Serial(device, baud)
+# 配置串口
+com = serial.Serial("/dev/ttyUSB0", 115200)
 
-    def send(self,data):
-        self.com.write(data)
+#发送提示字符
+com.write(b'Hello WalnutPi!')
 
+while True:
+
+    # 获得接收缓冲区字符个数 int
+    count = com.inWaiting()
+    
+    if count != 0: #收到数据
+        
+        # 读取内容并打印
+        recv = com.read(count)
+        print(recv)
+        
+        #发回数据
+        com.write(recv)
+        
+        # 清空接收缓冲区
+        com.flushInput()
+        
+    # 延时100ms,接收间隔
+    time.sleep(0.1)
