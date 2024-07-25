@@ -28,7 +28,7 @@ class LineFollower:
         self.line_color = [( 0,  0, 0), ( 180,  255,  46)] # 巡线颜色范围  
         self.site_color = [( 0,  0, 200), (180,  30, 255)] # 场地颜色范围
         self.sample_line_pos_h = 0.2
-        self.sample_line_pos_l = 0.6
+        self.sample_line_pos_l = 0.8
 
 
     def thresh_process(self, frame):
@@ -173,8 +173,12 @@ class LineFollower:
         pt2_1 = (self.width, sample_height_l)
         pt2_2 = (         0, sample_height_l)
 
+        pt1_c = (int(center_h + self.width/2), sample_height_h)
+        pt2_c = (int(center_l + self.width/2), sample_height_l)
+
         cv2.line(drawed_frame, pt1_1, pt1_2, (0, 255, 255), 2)
         cv2.line(drawed_frame, pt2_1, pt2_2, (0, 255, 255), 2)
+        cv2.line(drawed_frame, pt1_c, pt2_c, (0, 255,   0), 2)
 
         if center_h != -1:
             cv2.circle(drawed_frame, (int(center_h + self.width/2), sample_height_h), 5, (0, 0, 255), -1)
