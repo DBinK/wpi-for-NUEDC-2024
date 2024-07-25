@@ -115,18 +115,23 @@ class LineFollower:
 
             return direction
         
+
         def angle_cal(point1, point2):
             """
-            计算两个点之间形成的角度
+            计算两个点之间形成的角度，相对于水平线。
             """
             x1, y1 = point1
             x2, y2 = point2
 
-            if x2 - x1 == 0:
-                angle = 0 
-            else:
-                slope = (y2 - y1) / (x2 - x1)
-                angle = np.arctan(slope) * 180 / np.pi  # 偏移到中间
+            # 使用arctan2计算角度，它可以处理所有象限
+            angle = np.arctan2(y2 - y1, x2 - x1) * 180 / np.pi
+
+            # 调整角度到0-360度范围
+            if angle < 0:
+                angle += 360
+
+            # 如果需要相对于垂直线的角度，可以进一步调整
+            angle = -(90 - angle % 180)
 
             return angle
 
