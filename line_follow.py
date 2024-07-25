@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
+from tracemalloc import start
 import cv2
 import numpy as np
 import time
 from loguru import logger
 import camera
-
-cam = camera.Camera(1000, 80)
 
 class LineFollower:
     def __init__(self):
@@ -23,6 +22,8 @@ class LineFollower:
 
         self.center_h = None
         self.center_l = None
+        self.angle    = None
+        self.delay_ms = None
 
         self.line_color = [( 0,  0, 0), ( 180,  255,  46)] # 巡线颜色范围  
         self.site_color = [( 0,  0, 200), (180,  30, 255)] # 场地颜色范围
@@ -87,17 +88,20 @@ class LineFollower:
         return final_mask
     
     def detect_line(self, masked_frame):
+        """
+        根据巡线颜色范围，在二值化处理后的图像上寻找巡线中心点。
+        """
+        start_time = time.time()
+
         def find_center(sample_line_pos):
             color = masked_frame[sample_line_pos]
             try:
-                # 找到白色的像素点个数，如寻黑色，则改为0
                 white_count = np.sum(color == 255)
-                # 找到白色的像素点索引，如寻黑色，则改为0
                 white_index = np.where(color == 255)
-                # 防止white_count=0的报错
-                if white_count == 0:
+                
+                if white_count == 0: # 防止white_count=0的报错
                     white_count = 1
-                # 计算方法应该是边缘检测，计算白色边缘的位置和/2，即是白色的中央位置。
+                    
                 left_pos  = white_index[0][white_count - 1]
                 right_pos = white_index[0][0]
 
@@ -111,21 +115,46 @@ class LineFollower:
 
             return direction
         
-        center_h = find_center(int(self.sample_line_pos_h * self.height))
-        center_l = find_center(int(self.sample_line_pos_l * self.height))
+        def angle_cal(point1, point2):
+            """
+            计算两个点之间形成的角度
+            """
+            x1, y1 = point1
+            x2, y2 = point2
+
+            if x2 - x1 == 0:
+                angle = 0 
+            else:
+                slope = (y2 - y1) / (x2 - x1)
+                angle = np.arctan(slope) * 180 / np.pi  # 偏移到中间
+
+            return angle
+
+        sample_height_h = int(self.sample_line_pos_h * self.height)
+        sample_height_l = int(self.sample_line_pos_l * self.height)
+        
+        center_h = find_center(sample_height_h)
+        center_l = find_center(sample_height_l)
+        angle    = angle_cal((center_h, sample_height_h), (center_l, sample_height_l))
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
 
         self.center_h = center_h
         self.center_l = center_l
+        self.angle    = angle
+        self.delay_ms = elapsed_time
 
-        logger.debug(f"center_h: {center_h}, center_l: {center_l}")
+        logger.debug(f"Detection took {elapsed_time:.4f} seconds.")
+        logger.debug(f"center_h: {center_h}, center_l: {center_l}, angle: {angle}")
 
-        return center_h, center_l
+        return center_h, center_l, angle
     
     def detect(self, frame):
         masked_frame = self.thresh_process(frame)
-        center_h, center_l =self.detect_line(masked_frame)
+        center_h, center_l, angle =self.detect_line(masked_frame)
 
-        return center_h, center_l
+        return center_h, center_l, angle
     
     def draw(self, frame, center_h, center_l):
         drawed_frame = frame.copy()
@@ -139,13 +168,17 @@ class LineFollower:
         pt2_1 = (self.width, sample_height_l)
         pt2_2 = (         0, sample_height_l)
 
-        cv2.line(drawed_frame, pt1_1, pt1_2, (0, 0, 255), 2)
-        cv2.line(drawed_frame, pt2_1, pt2_2, (0, 0, 255), 2)
+        cv2.line(drawed_frame, pt1_1, pt1_2, (0, 255, 255), 2)
+        cv2.line(drawed_frame, pt2_1, pt2_2, (0, 255, 255), 2)
 
         if center_h != -1:
             cv2.circle(drawed_frame, (int(center_h + self.width/2), sample_height_h), 5, (0, 0, 255), -1)
         if center_l != -1:
             cv2.circle(drawed_frame, (int(center_l + self.width/2), sample_height_l), 5, (0, 0, 255), -1)
+
+        cv2.putText(drawed_frame, f"delay_ms: {self.delay_ms:.4f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.putText(drawed_frame, f"center_h: {center_h}, center_l: {center_l}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.putText(drawed_frame, f"angle:    {self.angle}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
         self.drawed_frame = drawed_frame
 
@@ -167,6 +200,7 @@ class LineFollower:
         """
         连续读取摄像头帧并处理，用于实时巡线。
         """
+        cam = camera.Camera(1000, 80)   
         cap = cam.VideoCapture()
 
         logger.info(f"exposure: {cap.get(cv2.CAP_PROP_EXPOSURE)}") 
@@ -174,8 +208,8 @@ class LineFollower:
         while True:
             ret, frame = cap.read()
             if ret:
-                center_h, center_l = self.detect(frame)
-                drawed_frame = self.draw(frame, center_h, center_l)
+                center_h, center_l, angle = self.detect(frame)              # 获取巡线中心点
+                drawed_frame = self.draw(frame, center_h, center_l)  # 绘制巡线中心点
 
                 cv2.namedWindow("src_frame", cv2.WINDOW_NORMAL)
                 cv2.setMouseCallback("src_frame", self.get_color)
@@ -192,5 +226,7 @@ class LineFollower:
 
 
 if __name__ == "__main__":
+
+
     line_follower = LineFollower()
     line_follower.test()
