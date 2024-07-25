@@ -45,8 +45,8 @@ class LineFollower:
 
         inverted_dst = cv2.bitwise_not(dst)
 
-        cv2.namedWindow('dst', cv2.WINDOW_NORMAL)
-        cv2.imshow('dst', inverted_dst)
+        # cv2.namedWindow('dst', cv2.WINDOW_NORMAL)
+        # cv2.imshow('dst', inverted_dst)
 
         self.masked_frame = inverted_dst
 
@@ -74,8 +74,8 @@ class LineFollower:
         site_mask = create_mask(self.hsv_frame, self.site_color)
         line_mask = create_mask(self.hsv_frame, self.line_color)
 
-        cv2.imshow('site_mask', site_mask)
-        cv2.imshow('line_mask', line_mask)
+        # cv2.imshow('site_mask', site_mask)
+        # cv2.imshow('line_mask', line_mask)
         
         # 对场地蒙版进行位运算取反，以突出显示场地外的区域
         inverted_site_mask = cv2.bitwise_not(site_mask)

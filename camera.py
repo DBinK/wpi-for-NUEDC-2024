@@ -7,9 +7,10 @@ class Camera:
         """
         初始化摄像头对象。
         @param exposure_time: 曝光时间，单位为us，默认为None
+        @param contrast: 对比度，取值范围0~100，默认为None
         """
         self.exposure_time = exposure_time  # 50~10000 us
-        self.contrast = contrast # 0~100
+        self.contrast      = contrast # 0~100
 
         self.cap = None  # 明确初始化为None
 
@@ -20,7 +21,7 @@ class Camera:
         if self.contrast is not None:
             subprocess.run(["v4l2-ctl", "-c", f"contrast={contrast}"])
 
-        self.init_camera()  # 确保在__init__之后调用
+        # self.init_camera()  # 确保在__init__之后调用
 
     def find_available_cameras(self, start_index=0, end_index=9):
         available_cameras = []
@@ -32,25 +33,34 @@ class Camera:
         logger.info(f"Cams {available_cameras} are available.")
         return available_cameras
 
-    def init_camera(self):
-        camera_index = self.find_available_cameras()
-        if camera_index:
-            cap = cv2.VideoCapture(camera_index[0])
-            if not cap.isOpened():
-                raise ValueError(f"Unable to open camera {camera_index}")
-            self.cap = cap  
+    def VideoCapture(self, index=None):
+        if not index:
+            camera_index = self.find_available_cameras()
+            if camera_index:
+                cap = cv2.VideoCapture(camera_index[0])
+                if not cap.isOpened():
+                    raise ValueError(f"Unable to open camera {camera_index}")
+                self.cap = cap  
 
-            # 打印摄像头信息
-            result = subprocess.run(["v4l2-ctl", "--device=/dev/video0", "--all"], capture_output=True, text=True)
-            logger.info(f"Camera {result.stdout} is initialized.")
+                # 打印摄像头信息
+                result = subprocess.run(["v4l2-ctl", "--device=/dev/video0", "--all"], capture_output=True, text=True)
+                logger.info(result.stdout)
+                logger.info(f"Camera {camera_index} is initialized.")
 
-            return self.cap
-        
+                return self.cap
+            
+            else:
+                raise ValueError("No cameras found")
         else:
-            raise ValueError("No cameras found")
-        
-    def VideoCapture(self):
-        return self.cap
+            cap = cv2.VideoCapture(index)
+            if not cap.isOpened():
+                raise ValueError(f"Unable to open camera {index}")
+            self.cap = cap  
+            result = subprocess.run(["v4l2-ctl", "--device=/dev/video0", "--all"], capture_output=True, text=True)
+            logger.info(result.stdout)
+            logger.info(f"Camera {index} is initialized.")
+
+            return cap
     
     def set_exposure_time(self, exposure_time):
         """
@@ -84,7 +94,7 @@ class Camera:
 
 if __name__ == "__main__":
     cam = Camera(1000)  # 实例化Camera类
-    cap = cam.get_cam_obj()  # 测试摄像头
+    cap = cam.VideoCapture()  # 测试摄像头
 
     if cap is not None:
         while True:

@@ -5,16 +5,16 @@ import numpy as np
 from loguru import logger
 
 import camera
+from line_follow import LineFollower
 from streamer import Streamer  
 
-streamer = Streamer()
+cam           = camera.Camera(400,80)
+line_follower = LineFollower()
+streamer      = Streamer()
 
 # 定义一个函数来处理摄像头数据
 def process_camera_data():
-    # 加载人脸检测级联分离器
-    faceCascade = cv2.CascadeClassifier('data/haarcascade_frontalface_default.xml')
 
-    cam = camera.Camera(100,80)
     cap = cam.VideoCapture()
 
     logger.info('正在初始化摄像头...')
@@ -37,29 +37,35 @@ def process_camera_data():
         start = time.time()
 
         ret, img = cap.read() # 从摄像头中实时读取图像
-
-        img = cv2.rotate(img, cv2.ROTATE_180) # 旋转图像 180 度
+        # img = cv2.rotate(img, cv2.ROTATE_180) # 旋转图像 180 度
 
         if ret:
-            # 检测出所有人脸
-            faces = faceCascade.detectMultiScale(img, 1.2)
-            #logger.info(f'faces: {faces}')
+            # # 检测出所有人脸
+            # faces = faceCascade.detectMultiScale(img, 1.2)
+            # #logger.info(f'faces: {faces}')
 
-            # 遍历所有人脸结果
-            for (x, y, w, h) in faces:
-                cv2.rectangle(img, (x, y), (x+w, y+h), (0, 0, 255), 3) # 人脸画框
+            # # 遍历所有人脸结果
+            # for (x, y, w, h) in faces:
+            #     cv2.rectangle(img, (x, y), (x+w, y+h), (0, 0, 255), 3) # 人脸画框
+
+            center_h, center_l, angle = line_follower.detect(img)              # 获取巡线中心点
+            drawed_frame = line_follower.draw(img, center_h, center_l)  # 绘制巡线中心点
+
+            # cv2.namedWindow("src_frame", cv2.WINDOW_NORMAL)
+            # cv2.setMouseCallback("src_frame", line_follower.get_color)
+            # cv2.imshow("src_frame", line_follower.src_frame)
+
+            # cv2.namedWindow("drawed_frame", cv2.WINDOW_NORMAL)
+            # cv2.imshow("drawed_frame", drawed_frame)
 
             end = time.time()
 
             # 计算FPS(每秒帧率), 结果取整数
-            fps = round(1/(end-start))
-            #logger.info(f'fps: {fps}')
-
-            # 图像上写字符
-            cv2.putText(img, "FPS: "+ str(fps), (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 5)
+            fps = 1/(end-start)
+            cv2.putText(drawed_frame, "FPS: "+ str(fps), (10, 460), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
             # 更新流媒体服务器的图像
-            streamer.update(img)
+            streamer.update(drawed_frame)
 
         else:
             logger.error('读取摄像头失败')
