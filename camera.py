@@ -3,17 +3,22 @@ import subprocess
 from loguru import logger
 
 class Camera:
-    def __init__(self, exposure_time=None):
+    def __init__(self, exposure_time=None, contrast=None):
         """
         初始化摄像头对象。
         @param exposure_time: 曝光时间，单位为us，默认为None
         """
         self.exposure_time = exposure_time  # 50~10000 us
+        self.contrast = contrast # 0~100
+
         self.cap = None  # 明确初始化为None
 
         if self.exposure_time is not None:
             subprocess.run(["v4l2-ctl", "-c", "auto_exposure=1"])
             subprocess.run(["v4l2-ctl", "-c", f"exposure_time_absolute={exposure_time}"])
+
+        if self.contrast is not None:
+            subprocess.run(["v4l2-ctl", "-c", f"contrast={contrast}"])
 
         self.init_camera()  # 确保在__init__之后调用
 
@@ -43,6 +48,26 @@ class Camera:
         
         else:
             raise ValueError("No cameras found")
+        
+    def VideoCapture(self):
+        return self.cap
+    
+    def set_exposure_time(self, exposure_time):
+        """
+        设置曝光时间。
+        @param exposure_time: 曝光时间，单位为us
+        """
+        self.exposure_time = exposure_time
+        subprocess.run(["v4l2-ctl", "-c", "auto_exposure=1"])
+        subprocess.run(["v4l2-ctl", "-c", f"exposure_time_absolute={exposure_time}"])
+
+    def set_contrast(self, contrast):
+        """
+        设置对比度。
+        @param contrast: 对比度，取值范围0~100
+        """
+        self.contrast = contrast
+        subprocess.run(["v4l2-ctl", "-c", f"contrast={contrast}"])
 
     def test(self):
         if self.cap is not None:
@@ -55,8 +80,17 @@ class Camera:
         cv2.destroyAllWindows()
         if self.cap is not None:
             self.cap.release()
-            
+
 
 if __name__ == "__main__":
     cam = Camera(1000)  # 实例化Camera类
-    cam.test()  # 测试摄像头
+    cap = cam.get_cam_obj()  # 测试摄像头
+
+    if cap is not None:
+        while True:
+            ret, frame = cap.read()
+            if ret:
+                cv2.imshow("frame", frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+        cv2.destroyAllWindows()
