@@ -7,13 +7,17 @@ from loguru import logger
 class Streamer:
     def __init__(self):
         self.app = Flask(__name__)
-        self.default_frame = np.zeros((500, 500, 3), dtype=np.uint8)  # 默认的黑色图片
+        self.default_frame = np.zeros((500, 500, 3), dtype=np.uint8)
         self.current_frame = self.default_frame.copy()
-        self.current_variable = "初始值"  # 初始化变量
+        self.variables = {
+            "变量1": "初始值1",
+            "变量2": "初始值2",
+            "变量3": "初始值3"
+        }
 
         @self.app.route('/')
         def index():
-            return render_template('index.html', current_variable=self.current_variable)
+            return render_template('index.html', variables=self.variables)
 
         @self.app.route('/video_feed')
         def video_feed():
@@ -21,11 +25,12 @@ class Streamer:
 
         @self.app.route('/update_variable', methods=['POST'])
         def update_variable():
+            var_name = request.form.get('name')
             new_value = request.form.get('value')
-            if new_value:
-                self.current_variable = new_value  # 更新变量
-                logger.info(f"变量已更新为: {self.current_variable}")  # 记录更新信息
-            return '', 204  # 返回204 No Content
+            if var_name in self.variables and new_value:
+                self.variables[var_name] = new_value  # 更新变量
+                logger.info(f"{var_name} 已更新为: {new_value}")
+            return '', 204
 
     def generate_frames(self):
         """
@@ -49,9 +54,6 @@ class Streamer:
         self.current_frame = img
 
     def run(self):
-        """
-        启动Flask服务器
-        """
         self.app.run(host='0.0.0.0', debug=False, threaded=True)  
         # 将 debug 设置为 False，并启用 threaded
 

@@ -62,9 +62,9 @@ def process_camera_data():
             streamer.update(drawed_frame)
 
             # 发送数据到串口
-            if center_l != None:
+            if center_l != None:  # 示例数据： [111,245,456]
                 com.write(f'[{center_l},{center_h},{angle}]'.encode('ascii'))
-                logger.info(f'发送数据到串口 {center_l}')
+                logger.info(f'发送到串口的数据: {center_l}')
 
         else:
             logger.error('读取摄像头失败')
