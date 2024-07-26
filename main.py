@@ -10,14 +10,14 @@ import camera
 from line_follow import LineFollower
 from streamer import Streamer  
 
-cam           = camera.Camera(400,80)
+cam           = camera.Camera(400,80) 
 line_follower = LineFollower()
 streamer      = Streamer()
 
-if platform.node() == 'WalnutPi':
-    com = serial.Serial('/dev/ttyS4', 115200)
+if platform.node() == 'WalnutPi':               # 开发板设备名
+    com = serial.Serial('/dev/ttyS4', 115200)   # 开发板串口
 else:
-    com = serial.Serial('/dev/ttyUSB0', 115200)
+    com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
 
 # 定义一个函数来处理摄像头数据
 def process_camera_data():
@@ -32,10 +32,6 @@ def process_camera_data():
 
     logger.info(cap)
 
-    # 降低分辨率以提高识别速度
-    # cap.set(3, 480) # 设置采集图像宽为480
-    # cap.set(4, 320) # 设置采集图像高为320
-
     # 计算FPS（每秒帧率参数）
     start = 0
     end = 0
@@ -47,13 +43,6 @@ def process_camera_data():
         # img = cv2.rotate(img, cv2.ROTATE_180) # 旋转图像 180 度
 
         if ret:
-            # # 检测出所有人脸
-            # faces = faceCascade.detectMultiScale(img, 1.2)
-            # #logger.info(f'faces: {faces}')
-
-            # # 遍历所有人脸结果
-            # for (x, y, w, h) in faces:
-            #     cv2.rectangle(img, (x, y), (x+w, y+h), (0, 0, 255), 3) # 人脸画框
 
             center_h, center_l, angle = line_follower.detect(img)       # 获取巡线中心点
             drawed_frame = line_follower.draw(img, center_h, center_l)  # 绘制巡线中心点
@@ -74,9 +63,9 @@ def process_camera_data():
             # 更新流媒体服务器的图像
             streamer.update(drawed_frame)
 
+            # 发送数据到串口
             if center_l != None:
-                # 发送数据到串口
-                com.write(f'{center_l}, {center_h}, {angle}'.encode('ascii'))
+                com.write(f'[{center_l},{center_h},{angle}]'.encode('ascii'))
                 logger.info(f'发送数据到串口 {center_l}')
 
         else:

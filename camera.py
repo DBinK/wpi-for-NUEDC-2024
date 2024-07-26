@@ -33,8 +33,18 @@ class Camera:
                 cap.release()
         logger.info(f"Cams {available_cameras} are available.")
         return available_cameras
+    
+    def get_camera_serial(camera_index):
 
-    def VideoCapture(self, index=None):
+        command = f'udevadm info --name=/dev/video{camera_index} | grep ID_SERIAL='
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        output, _ = p.communicate()
+        serial = output.decode().strip().split('=')[1] if output else None
+
+        return serial
+
+    def VideoCapture(self, index=None, ID_USB_SERIAL=None):
+        
         if not index:
             camera_index = self.find_available_cameras()
             if camera_index:
