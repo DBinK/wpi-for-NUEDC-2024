@@ -1,3 +1,4 @@
+# 标准库
 import cv2
 import time
 import platform
@@ -6,11 +7,13 @@ import numpy as np
 from loguru import logger
 import serial
 
-import camera
-from line_follow import LineFollower
-from streamer import Streamer  
+# 导入自定义模块
+from modules.camera import Camera
+from modules.line_follow import LineFollower
+from modules.streamer import Streamer
 
-cam           = camera.Camera(400,80) 
+# 创建各类对象
+cam           = Camera(400,80) 
 line_follower = LineFollower()
 streamer      = Streamer()
 
@@ -19,17 +22,12 @@ if platform.node() == 'WalnutPi':               # 开发板设备名
 else:
     com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
 
-# 定义一个函数来处理摄像头数据
+# 摄像头处理线程
 def process_camera_data():
 
     cap = cam.VideoCapture()
 
     logger.info('正在初始化摄像头...')
-
-    if not cap.isOpened():
-        logger.error('无法打开摄像头设备')
-        return
-
     logger.info(cap)
 
     # 计算FPS（每秒帧率参数）
@@ -75,6 +73,7 @@ def process_camera_data():
             streamer.update(default_frame)
 
         time.sleep(0.01)
+
 
 # 创建一个线程来处理摄像头数据
 process_camera = threading.Thread(target=process_camera_data)
