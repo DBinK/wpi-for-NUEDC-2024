@@ -43,7 +43,8 @@ class Streamer:
         """
         启动Flask服务器
         """
-        self.app.run(host='0.0.0.0', debug=True)
+        self.app.run(host='0.0.0.0', debug=False, threaded=True)  
+        # 将 debug 设置为 False，并启用 threaded
 
 # 如果这个文件被直接运行，则启动服务器
 if __name__ == '__main__':
