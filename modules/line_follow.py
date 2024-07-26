@@ -4,7 +4,8 @@ import cv2
 import numpy as np
 import time
 from loguru import logger
-import camera
+
+from modules.camera import Camera
 
 class LineFollower:
     def __init__(self):
@@ -208,7 +209,7 @@ class LineFollower:
         """
         连续读取摄像头帧并处理，用于实时巡线。
         """
-        cam = camera.Camera(1000, 80)   
+        cam = Camera(1000, 80)   
         cap = cam.VideoCapture()
 
         logger.info(f"exposure: {cap.get(cv2.CAP_PROP_EXPOSURE)}") 
