@@ -40,8 +40,8 @@ class Motor:
             self.L_Motor(0)
             self.R_Motor(0)
         else:
-            self.L_Motor(200 + pixel*0.2)
-            self.R_Motor(200 - pixel*0.2)
+            self.L_Motor(160 + pixel*0.4)
+            self.R_Motor(160 - pixel*0.4)
 
 if __name__ == '__main__':
     motor = Motor()

@@ -51,8 +51,8 @@ while True:
         angle    = float(values[2].strip())   # 转换为浮点数并去除空格
 
     if line_follow:
-        moto.Motor_Control(center_l)
-        print(center_l)
+        moto.Motor_Control(center_h)
+        # print(center_l)
         
     else:
         moto.stop()
