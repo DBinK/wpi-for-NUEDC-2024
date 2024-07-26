@@ -1,7 +1,7 @@
 import cv2
 import time
 import numpy as np
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request
 from loguru import logger
 
 class Streamer:
@@ -9,14 +9,23 @@ class Streamer:
         self.app = Flask(__name__)
         self.default_frame = np.zeros((500, 500, 3), dtype=np.uint8)  # 默认的黑色图片
         self.current_frame = self.default_frame.copy()
+        self.current_variable = "初始值"  # 初始化变量
 
         @self.app.route('/')
         def index():
-            return render_template('index.html')
+            return render_template('index.html', current_variable=self.current_variable)
 
         @self.app.route('/video_feed')
         def video_feed():
             return Response(self.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+        @self.app.route('/update_variable', methods=['POST'])
+        def update_variable():
+            new_value = request.form.get('value')
+            if new_value:
+                self.current_variable = new_value  # 更新变量
+                logger.info(f"变量已更新为: {self.current_variable}")  # 记录更新信息
+            return '', 204  # 返回204 No Content
 
     def generate_frames(self):
         """
@@ -28,7 +37,7 @@ class Streamer:
                     _, jpeg_buffer = cv2.imencode('.jpg', self.current_frame)
                     frame_data = jpeg_buffer.tobytes()
                     yield (b'--frame\r\n'
-                        b'Content-Type: image/jpeg\r\n\r\n' + frame_data + b'\r\n')
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame_data + b'\r\n')
                 except Exception as e:
                     logger.error(f"Error processing frame: {e}")
             time.sleep(0.01)  # 防止CPU占用过高
@@ -46,7 +55,6 @@ class Streamer:
         self.app.run(host='0.0.0.0', debug=False, threaded=True)  
         # 将 debug 设置为 False，并启用 threaded
 
-# 如果这个文件被直接运行，则启动服务器
 if __name__ == '__main__':
     streamer = Streamer()
     streamer.run()

@@ -4,9 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>实时视频流</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <!-- <h1>实时视频流</h1> -->
-    <img src="{{ url_for('video_feed') }}"  height="480">
+    <h1>实时视频流</h1>
+    <img src="{{ url_for('video_feed') }}" height="480">
+    
+    <div>
+        <p>当前变量值: <span id="current_variable">{{ current_variable }}</span></p>
+        <p>请更新变量:</p>
+        <input type="text" id="new_value" placeholder="输入新值">
+        <button id="update_button">更新</button>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $('#update_button').click(function(){
+                var newValue = $('#new_value').val();
+                $.post('/update_variable', { value: newValue }, function(data){
+                    $('#current_variable').text(newValue);  // 更新当前变量显示
+                    $('#new_value').val('');  // 清空输入框
+                }).fail(function() {
+                    alert("更新失败，请重试。");
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -32,7 +32,7 @@ def process_camera_data():
 
     # 计算FPS（每秒帧率参数）
     start = 0
-    end = 0
+    end   = 0
 
     while True:
         start = time.time()
