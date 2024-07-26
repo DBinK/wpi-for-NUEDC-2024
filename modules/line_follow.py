@@ -27,8 +27,8 @@ class LineFollower:
 
         self.line_color = [( 0,  0, 0), ( 180,  255,  46)] # 巡线颜色范围  
         self.site_color = [( 0,  0, 200), (180,  30, 255)] # 场地颜色范围
-        self.sample_line_pos_h = 0.2
-        self.sample_line_pos_l = 0.8
+        self.sample_line_pos_h = 0.1
+        self.sample_line_pos_l = 0.6
 
 
     def thresh_process(self, frame):

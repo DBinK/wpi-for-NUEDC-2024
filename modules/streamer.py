@@ -10,9 +10,11 @@ class Streamer:
         self.default_frame = np.zeros((500, 500, 3), dtype=np.uint8)
         self.current_frame = self.default_frame.copy()
         self.variables = {
-            "变量1": "初始值1",
-            "变量2": "初始值2",
-            "变量3": "初始值3"
+            "center_l": None,
+            "center_h": None,
+            "angle": None,
+            "sample_line_pos_h": None,
+            "sample_line_pos_l": None
         }
 
         @self.app.route('/')
@@ -31,6 +33,10 @@ class Streamer:
                 self.variables[var_name] = new_value  # 更新变量
                 logger.info(f"{var_name} 已更新为: {new_value}")
             return '', 204
+        
+        @self.app.route('/get_variables', methods=['GET'])
+        def get_variables():
+            return self.variables
 
     def generate_frames(self):
         """

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,59 +11,89 @@
             display: flex;
             justify-content: center;
             align-items: stretch;
-            height: 100vh; /* 使页面高度充满视口 */
+            height: 100vh;
+            /* 使页面高度充满视口 */
             margin: 0;
         }
+
         .container {
             display: flex;
             flex-direction: row;
-            align-items: stretch; /* 使标题和视频流同高 */
-            width: 80%; /* 设置容器宽度 */
+            align-items: stretch;
+            /* 使标题和视频流同高 */
+            width: 80%;
+            /* 设置容器宽度 */
         }
+
         .video-container {
-            flex: 1; /* 视频流容器占据剩余空间 */
+            flex: 1;
+            /* 视频流容器占据剩余空间 */
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            margin-top: 30px; /* 设置距离顶部的间距 */
+            margin-top: 30px;
+            /* 设置距离顶部的间距 */
         }
+
         .table-container {
-            flex: 1; /* 表格容器占据剩余空间 */
+            flex: 1;
+            /* 表格容器占据剩余空间 */
             padding: 20px;
             display: flex;
-            flex-direction: column; /* 使标题和表格垂直排列 */
+            flex-direction: column;
+            /* 使标题和表格垂直排列 */
         }
+
         h1 {
-            margin: 0; /* 去掉标题的默认外边距 */
-            text-align: center; /* 标题居中 */
+            margin: 0;
+            /* 去掉标题的默认外边距 */
+            text-align: center;
+            /* 标题居中 */
         }
+
         table {
             width: 100%;
-            border-collapse: collapse; /* 合并边框 */
-            margin-top: 20px; /* 标题与表格之间的间距 */
+            border-collapse: collapse;
+            /* 合并边框 */
+            margin-top: 20px;
+            /* 标题与表格之间的间距 */
         }
-        th, td {
-            border: 1px solid #ccc; /* 添加边框 */
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            /* 添加边框 */
             padding: 10px;
             text-align: center;
         }
+
         th {
-            background-color: #f2f2f2; /* 表头背景色 */
+            background-color: #f2f2f2;
+            /* 表头背景色 */
         }
+
         .input-container {
-            display: flex; /* 使用flex布局 */
-            justify-content: space-between; /* 输入框和按钮之间的间距 */
-            width: 100%; /* 适应表格宽度 */
+            display: flex;
+            /* 使用flex布局 */
+            justify-content: space-between;
+            /* 输入框和按钮之间的间距 */
+            width: 100%;
+            /* 适应表格宽度 */
         }
+
         input[type="text"] {
-            flex: 1; /* 输入框占据剩余空间 */
-            margin-right: 10px; /* 输入框与按钮之间的间距 */
+            flex: 1;
+            /* 输入框占据剩余空间 */
+            margin-right: 10px;
+            /* 输入框与按钮之间的间距 */
             border: none;
-            border-bottom: 1px solid #ccc; /* 只显示底部边框 */
+            border-bottom: 1px solid #ccc;
+            /* 只显示底部边框 */
             outline: none;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="video-container">
@@ -97,14 +128,14 @@
     </div>
 
     <script>
-        $(document).ready(function(){
+        $(document).ready(function () {
             // 按钮点击事件
-            $('.update_button').click(function(){
+            $('.update_button').click(function () {
                 updateVariable($(this).data('var'));
             });
 
             // 按下回车键事件
-            $('input[type="text"]').keypress(function(event) {
+            $('input[type="text"]').keypress(function (event) {
                 if (event.which === 13) {  // 13是回车键的键码
                     var varName = $(this).siblings('.update_button').data('var');
                     updateVariable(varName);
@@ -113,14 +144,24 @@
 
             function updateVariable(varName) {
                 var newValue = $('#new_value_' + varName).val();
-                $.post('/update_variable', { name: varName, value: newValue }, function(data){
+                $.post('/update_variable', { name: varName, value: newValue }, function (data) {
                     $('#current_value_' + varName).text(newValue);  // 更新当前值显示
                     $('#new_value_' + varName).val('');  // 清空输入框
-                }).fail(function() {
+                }).fail(function () {
                     alert("更新失败，请重试。");
                 });
             }
+
+            // 定时获取最新的变量值
+            setInterval(function () {
+                $.get('/get_variables', function (data) {
+                    for (var varName in data) {
+                        $('#current_value_' + varName).text(data[varName]);
+                    }
+                });
+            }, 100); // 每100ms请求一次
         });
     </script>
 </body>
+
 </html>

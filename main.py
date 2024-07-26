@@ -22,6 +22,8 @@ if platform.node() == 'WalnutPi':               # 开发板设备名
 else:
     com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
 
+lock = threading.Lock()
+
 # 摄像头处理线程
 def process_camera_data():
 
@@ -58,8 +60,22 @@ def process_camera_data():
             fps = 1/(end-start)
             cv2.putText(drawed_frame, "FPS: "+ str(fps), (10, 460), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-            # 更新流媒体服务器的图像
-            streamer.update(drawed_frame)
+            # 发送数据到 streamer
+
+            with lock:
+                streamer.update(drawed_frame)  # 更新流媒体服务器的图像
+
+                # 只读数据
+                streamer.variables["center_l"] = center_l
+                streamer.variables["center_h"] = center_h
+                streamer.variables["angle"]    = angle
+
+                # 从 streamer 更新数据
+                if streamer.variables["sample_line_pos_h"] is not None:
+                    line_follower.sample_line_pos_h = float(streamer.variables["sample_line_pos_h"]) * 0.01
+
+                if streamer.variables["sample_line_pos_l"] is not None:
+                    line_follower.sample_line_pos_l = float(streamer.variables["sample_line_pos_l"]) * 0.01
 
             # 发送数据到串口
             if center_l != None:  # 示例数据： [111,245,456]
