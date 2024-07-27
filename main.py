@@ -19,13 +19,27 @@ streamer      = Streamer()
 
 if platform.node() == 'WalnutPi':               # 开发板设备名
     com = serial.Serial('/dev/ttyS4', 115200)   # 开发板串口
-else:
-    com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
+# else:
+#     com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
 
 lock = threading.Lock()
 
+# 初始化变量
+base_speed = 160
+ph = 0.2
+pl = 0
+pa = 0
+
+def update_variable(var_name, default_value, conversion_func=float):
+    if streamer.variables[var_name] is not None:
+        return conversion_func(streamer.variables[var_name])
+    else:
+        streamer.variables[var_name] = default_value
+        return default_value
+
 # 摄像头处理线程
 def process_camera_data():
+    global base_speed, ph, pl, pa  # 声明使用全局变量
 
     cap = cam.VideoCapture()
 
@@ -60,10 +74,9 @@ def process_camera_data():
             fps = 1/(end-start)
             cv2.putText(drawed_frame, "FPS: "+ str(fps), (10, 460), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-
             # 设置电机速度
-            l_motor = int(160 + center_h*0.4 + center_l*0 + angle*0)
-            r_motor = int(160 - center_h*0.4 + center_l*0 + angle*0)
+            l_motor = int(base_speed + (center_h*ph + center_l*pl + angle*pa))
+            r_motor = int(base_speed - (center_h*ph + center_l*pl + angle*pa))
 
             # 发送数据到 streamer
             with lock:
@@ -78,16 +91,18 @@ def process_camera_data():
                 streamer.variables["r_motor"]  = r_motor
 
                 # 从 streamer 更新数据
-                if streamer.variables["sample_line_pos_h"] is not None:
-                    line_follower.sample_line_pos_h = float(streamer.variables["sample_line_pos_h"]) * 0.01
-
-                if streamer.variables["sample_line_pos_l"] is not None:
-                    line_follower.sample_line_pos_l = float(streamer.variables["sample_line_pos_l"]) * 0.01
+                line_follower.sample_line_pos_h = update_variable("sample_line_pos_h", line_follower.sample_line_pos_h)
+                line_follower.sample_line_pos_l = update_variable("sample_line_pos_l", line_follower.sample_line_pos_l)
+                base_speed = update_variable("base_speed", base_speed, int)
+                ph = update_variable("ph", ph)
+                pl = update_variable("pl", pl)
+                pa = update_variable("pa", pa)
+                
 
             # 发送数据到串口
-            if center_l != None:  # 示例数据： [111,245,456]
-                com.write(f'[{center_l},{center_h},{angle},{l_motor},{r_motor}]'.encode('ascii'))
-                logger.info(f'发送到串口的数据: {center_l}')
+            # if center_l != None:  # 示例数据： [111,245,456]
+            #     com.write(f'[{center_l},{center_h},{angle},{l_motor},{r_motor}]'.encode('ascii'))
+            #     logger.info(f'发送到串口的数据: {center_l}')
 
         else:
             logger.error('读取摄像头失败')
@@ -98,9 +113,10 @@ def process_camera_data():
         time.sleep(0.01)
 
 # 创建一个线程来处理摄像头数据
+logger.info('正在启动摄像头处理线程...')
 process_camera = threading.Thread(target=process_camera_data)
 process_camera.start()
 
 # 启动Flask服务器
-streamer.run()
 logger.info('正在启动Flask服务器...')
+streamer.run()

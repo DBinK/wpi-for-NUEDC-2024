@@ -17,7 +17,12 @@ class Streamer:
             "r_motor": None,
 
             "sample_line_pos_h": None,
-            "sample_line_pos_l": None
+            "sample_line_pos_l": None,
+
+            "base_speed": None,
+            "ph": None,
+            "pl": None,
+            "pa": None
         }
 
         @self.app.route('/')
