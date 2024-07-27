@@ -42,12 +42,12 @@ except Exception as e:
 
 # 初始化变量
 base_speed = int(config.get('base_speed', 100))  # 默认值为100
-ph         = int(config.get('ph', 0.2))
-pl         = int(config.get('pl', 0))
-pa         = int(config.get('pa', 0))
+ph         = float(config.get('ph', 0.2))
+pl         = float(config.get('pl', 0))
+pa         = float(config.get('pa', 0))
 
-line_follower.sample_line_pos_h = int(config.get('sample_line_pos_h', 0.1))
-line_follower.sample_line_pos_l = int(config.get('sample_line_pos_l', 0.6))
+line_follower.sample_line_pos_h = float(config.get('sample_line_pos_h', 0.1))
+line_follower.sample_line_pos_l = float(config.get('sample_line_pos_l', 0.6))
 
 # 更新变量
 def update_variable(var_name, default_value, conversion_func=float):
