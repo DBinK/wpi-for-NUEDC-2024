@@ -49,14 +49,14 @@ while True:
         center_h = int(values[0].strip())    # 转换为整数并去除空格
         center_l = int(values[1].strip())    # 转换为整数并去除空格
         angle    = float(values[2].strip())  # 转换为浮点数并去除空格
-        l_motor  = int(values[3].strip())
-        r_motor  = int(values[4].strip()) 
+        l_motor_sp  = int(values[3].strip())
+        l_motor_sp  = int(values[4].strip()) 
 
     if line_follow:
         # moto.Motor_Control(center_h)
         # print(center_l)
-        moto.l_motor(l_motor)
-        moto.r_motor(r_motor)
+        moto.l_motor(l_motor_sp)
+        moto.r_motor(l_motor_sp)
         
     else:
         moto.stop()
