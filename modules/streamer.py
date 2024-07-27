@@ -1,6 +1,7 @@
 import cv2
 import time
 import numpy as np
+import yaml
 from flask import Flask, render_template, Response, request
 from loguru import logger
 
@@ -16,10 +17,8 @@ class Streamer:
             "angle": None,
             "l_motor": None,
             "r_motor": None,
-
             "sample_line_pos_h": None,
             "sample_line_pos_l": None,
-
             "base_speed": None,
             "ph": None,
             "pl": None,
@@ -41,6 +40,7 @@ class Streamer:
             if var_name in self.variables and new_value:
                 self.variables[var_name] = new_value  # 更新变量
                 logger.info(f"{var_name} 已更新为: {new_value}")
+                self.save_variables_to_yaml()  # 保存变量到 YAML 文件
             return '', 204
         
         @self.app.route('/get_variables', methods=['GET'])
@@ -67,6 +67,14 @@ class Streamer:
         更新当前显示的图像帧
         """
         self.current_frame = img
+
+    def save_variables_to_yaml(self):
+        """
+        将变量保存到 YAML 文件
+        """
+        with open('config/config.yaml', 'w') as file:
+            yaml.dump(self.variables, file)
+            logger.info("变量已保存到 variables.yaml")
 
     def run(self):
         self.app.run(host='0.0.0.0', debug=False, threaded=True)  

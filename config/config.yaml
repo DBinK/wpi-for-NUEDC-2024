@@ -1,0 +1,28 @@
+angle: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  w/UoXI/COkA=
+base_speed: 160
+center_h: 120
+center_l: -1
+l_motor: 184
+pa: 0
+ph: 0.2
+pl: 0
+r_motor: 136
+running: '1'
+sample_line_pos_h: 0.1
+sample_line_pos_l: 0.6
