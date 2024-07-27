@@ -102,6 +102,9 @@ def process_camera_data():
                 l_motor = 0
                 r_motor = 0
 
+            l_motor = max(0, min(l_motor, 1023))
+            r_motor = max(0, min(r_motor, 1023))
+
             # 发送数据到 streamer
             with lock:
                 streamer.update(drawed_frame)  # 更新流媒体服务器的图像
@@ -126,7 +129,8 @@ def process_camera_data():
 
             # 发送数据到串口
             if com:  # 示例数据： [111,245,456]
-                com.write(f'[{center_l},{center_h},{angle},{l_motor},{r_motor}]'.encode('ascii'))
+                # com.write(f'[{center_l},{center_h},{angle},{l_motor},{r_motor}]'.encode('ascii'))
+                com.write(f'[{l_motor},{r_motor}]'.encode('ascii'))
                 logger.info(f'发送到串口的数据: {l_motor}, {r_motor}')
 
         else:
