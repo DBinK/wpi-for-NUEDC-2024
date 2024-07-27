@@ -79,7 +79,7 @@ class Servo:
         print("\n步进转动测试\n")
         for i in range(0, 300):
             self.step()
-            time.sleep(0.01)
+            time.sleep(0.1)
             
         self.deinit()
 
