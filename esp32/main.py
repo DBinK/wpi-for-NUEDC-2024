@@ -46,8 +46,8 @@ while True:
         
         values = decoded_data.split(",")   # 使用 split 方法分割字符串
 
-        center_l = int(values[0].strip())  # 转换为整数并去除空格
-        center_h = int(values[1].strip())  # 转换为整数并去除空格
+        center_h = int(values[0].strip())  # 转换为整数并去除空格
+        center_l = int(values[1].strip())  # 转换为整数并去除空格
         angle    = float(values[2].strip())   # 转换为浮点数并去除空格
 
     if line_follow:

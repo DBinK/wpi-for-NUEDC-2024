@@ -144,6 +144,15 @@
 
             function updateVariable(varName) {
                 var newValue = $('#new_value_' + varName).val();
+
+                // 正则表达式用于校验是否为有效的整数或浮点数
+                var isValidNumber = /^-?\d+(\.\d+)?$/.test(newValue);
+                
+                if (!isValidNumber) {
+                    alert("请输入有效的整数或浮点数。");
+                    return;  // 如果输入无效，直接返回，不执行后续代码
+                }
+
                 $.post('/update_variable', { name: varName, value: newValue }, function (data) {
                     $('#current_value_' + varName).text(newValue);  // 更新当前值显示
                     $('#new_value_' + varName).val('');  // 清空输入框

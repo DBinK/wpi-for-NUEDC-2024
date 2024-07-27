@@ -13,6 +13,9 @@ class Streamer:
             "center_l": None,
             "center_h": None,
             "angle": None,
+            "l_motor": None,
+            "r_motor": None,
+
             "sample_line_pos_h": None,
             "sample_line_pos_l": None
         }

@@ -9,7 +9,7 @@ class Motor:
         self.R_GO   = PWM(Pin(35), freq=100)
         self.R_BACK = PWM(Pin(36), freq=100)
 
-    def L_Motor(self, speed):
+    def l_motor(self, speed):
         speed = int(max(0, min(speed, 1023)))
         if speed > 0:
             self.L_GO.duty(speed)
@@ -20,7 +20,7 @@ class Motor:
         else:
             self.L_GO.duty(0)
 
-    def R_Motor(self, speed):
+    def r_motor(self, speed):
         speed = int(max(0, min(speed, 1023)))
         if speed > 0:
             self.R_GO.duty(speed)
@@ -32,27 +32,27 @@ class Motor:
             self.R_GO.duty(0)
 
     def stop(self):
-        self.L_Motor(1)
-        self.R_Motor(1)
+        self.l_motor(1)
+        self.r_motor(1)
 
     def Motor_Control(self, pixel):
         if pixel == 0:
-            self.L_Motor(0)
-            self.R_Motor(0)
+            self.l_motor(0)
+            self.r_motor(0)
         else:
-            self.L_Motor(160 + pixel*0.4)
-            self.R_Motor(160 - pixel*0.4)
+            self.l_motor(160 + pixel*0.4)
+            self.r_motor(160 - pixel*0.4)
 
 if __name__ == '__main__':
     motor = Motor()
 
     while True:
-        print("R_Motor forward")
-        motor.R_Motor(200)
+        print("r_motor forward")
+        motor.r_motor(200)
         sleep(3)    
         
-        print("L_Motor forward")
-        motor.L_Motor(200)
+        print("l_motor forward")
+        motor.l_motor(200)
         sleep(3)
         
         print("Motor_Control")

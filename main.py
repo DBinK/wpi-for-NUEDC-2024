@@ -19,8 +19,8 @@ streamer      = Streamer()
 
 if platform.node() == 'WalnutPi':               # 开发板设备名
     com = serial.Serial('/dev/ttyS4', 115200)   # 开发板串口
-else:
-    com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
+# else:
+#     com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
 
 lock = threading.Lock()
 
@@ -60,15 +60,22 @@ def process_camera_data():
             fps = 1/(end-start)
             cv2.putText(drawed_frame, "FPS: "+ str(fps), (10, 460), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-            # 发送数据到 streamer
 
+            # 设置电机速度
+            l_motor = 160 + center_h*0.4 + center_l*0 + angle*0
+            r_motor = 160 - center_h*0.4 + center_l*0 + angle*0
+
+            # 发送数据到 streamer
             with lock:
                 streamer.update(drawed_frame)  # 更新流媒体服务器的图像
 
                 # 只读数据
                 streamer.variables["center_l"] = center_l
                 streamer.variables["center_h"] = center_h
-                streamer.variables["angle"]    = angle
+                streamer.variables["angle"]    = round(angle,2)
+
+                streamer.variables["l_motor"]  = int(l_motor)
+                streamer.variables["r_motor"]  = int(r_motor)
 
                 # 从 streamer 更新数据
                 if streamer.variables["sample_line_pos_h"] is not None:
@@ -78,9 +85,9 @@ def process_camera_data():
                     line_follower.sample_line_pos_l = float(streamer.variables["sample_line_pos_l"]) * 0.01
 
             # 发送数据到串口
-            if center_l != None:  # 示例数据： [111,245,456]
-                com.write(f'[{center_l},{center_h},{angle}]'.encode('ascii'))
-                logger.info(f'发送到串口的数据: {center_l}')
+            # if center_l != None:  # 示例数据： [111,245,456]
+            #     com.write(f'[{center_l},{center_h},{angle}]'.encode('ascii'))
+            #     logger.info(f'发送到串口的数据: {center_l}')
 
         else:
             logger.error('读取摄像头失败')
@@ -90,11 +97,10 @@ def process_camera_data():
 
         time.sleep(0.01)
 
-
 # 创建一个线程来处理摄像头数据
 process_camera = threading.Thread(target=process_camera_data)
 process_camera.start()
 
 # 启动Flask服务器
 streamer.run()
-
+logger.info('正在启动Flask服务器...')
