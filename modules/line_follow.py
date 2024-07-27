@@ -133,7 +133,7 @@ class LineFollower:
             # 如果需要相对于垂直线的角度，可以进一步调整
             angle = -(90 - angle % 180)
 
-            return angle
+            return round(angle,2)
 
         sample_height_h = int(self.sample_line_pos_h * self.height)
         sample_height_l = int(self.sample_line_pos_l * self.height)

@@ -19,6 +19,8 @@ LED  = Pin(46,Pin.OUT) #构建LED对象,开始熄灭
 center_l = 0
 center_h = -1
 angle    = -1
+l_motor_sp  = 0
+r_motor_sp  = 0
 
 line_follow = False
 
@@ -50,13 +52,13 @@ while True:
         center_l = int(values[1].strip())    # 转换为整数并去除空格
         angle    = float(values[2].strip())  # 转换为浮点数并去除空格
         l_motor_sp  = int(values[3].strip())
-        l_motor_sp  = int(values[4].strip()) 
+        r_motor_sp  = int(values[4].strip()) 
 
     if line_follow:
         # moto.Motor_Control(center_h)
         # print(center_l)
         moto.l_motor(l_motor_sp)
-        moto.r_motor(l_motor_sp)
+        moto.r_motor(r_motor_sp)
         
     else:
         moto.stop()
