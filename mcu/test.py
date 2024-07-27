@@ -6,4 +6,4 @@ rb = PWM(Pin(36), freq=50)
 
 
 rg.duty(0)
-rb.duty(500)
+rb.duty(500)a

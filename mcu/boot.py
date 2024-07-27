@@ -6,10 +6,11 @@
 '''
 import network,time
 from machine import Pin
+from neopixel import NeoPixel
 
 # 释放所有GPIO, 断电重上电不再失控
 def release_all_GPIO():
-    for i in range(0, 47):
+    for i in range(0, 21):
         try:
             Pin(i).off()
         except:
@@ -17,11 +18,31 @@ def release_all_GPIO():
 
 release_all_GPIO()
 
+def rgb(value):
+    BLACK =(0,0,0)
+    RED   =(10,0,0)
+    GREEN =(0,10,0)
+    BLUE  =(0,0,1)
 
+    pin = Pin(8, Pin.OUT)
+    np = NeoPixel(pin, 1)
+
+    def write(value):
+        np.fill(value)
+        np.write()
+
+    if value == 0:
+        write(BLACK)
+    elif value == 1:
+        write(BLUE)
+    elif value == 2:
+        write(GREEN)
+    elif value == 3:
+        write(RED)
 #WIFI连接函数
 def WIFI_Connect():
 
-    WIFI_LED=Pin(46, Pin.OUT) #初始化WIFI指示灯
+    # WIFI_LED=Pin(46, Pin.OUT) #初始化WIFI指示灯
 
     wlan = network.WLAN(network.STA_IF) #STA模式
     wlan.active(True)                   #激活接口
@@ -34,9 +55,9 @@ def WIFI_Connect():
         while not wlan.isconnected():
 
             #LED闪烁提示
-            WIFI_LED.value(1)
+            rgb(1)
             time.sleep_ms(300)
-            WIFI_LED.value(0)
+            rgb(0)
             time.sleep_ms(300)
 
             #超时判断,15秒没连接成功判定为超时
@@ -47,7 +68,7 @@ def WIFI_Connect():
     if wlan.isconnected():
         
         #LED点亮
-        WIFI_LED.value(1)
+        rgb(1)
 
         #串口打印信息
         print('network information:', wlan.ifconfig())
