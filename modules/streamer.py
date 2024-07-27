@@ -10,6 +10,7 @@ class Streamer:
         self.default_frame = np.zeros((500, 500, 3), dtype=np.uint8)
         self.current_frame = self.default_frame.copy()
         self.variables = {
+            "runing": None,
             "center_l": None,
             "center_h": None,
             "angle": None,

@@ -25,6 +25,8 @@ if platform.node() == 'WalnutPi':               # 开发板设备名
 lock = threading.Lock()
 
 # 初始化变量
+running = 1
+
 base_speed = 160
 ph = 0.2
 pl = 0
@@ -74,9 +76,13 @@ def process_camera_data():
             fps = 1/(end-start)
             cv2.putText(drawed_frame, "FPS: "+ str(fps), (10, 460), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-            # 设置电机速度
-            l_motor = int(base_speed + (center_h*ph + center_l*pl + angle*pa))
-            r_motor = int(base_speed - (center_h*ph + center_l*pl + angle*pa))
+            if running == 1:
+                # 设置电机速度
+                l_motor = int(base_speed + (center_h*ph + center_l*pl + angle*pa))
+                r_motor = int(base_speed - (center_h*ph + center_l*pl + angle*pa))
+            else:
+                l_motor = 0
+                r_motor = 0
 
             # 发送数据到 streamer
             with lock:
@@ -91,6 +97,7 @@ def process_camera_data():
                 streamer.variables["r_motor"]  = r_motor
 
                 # 从 streamer 更新数据
+                running = update_variable("running", running, int)
                 line_follower.sample_line_pos_h = update_variable("sample_line_pos_h", line_follower.sample_line_pos_h)
                 line_follower.sample_line_pos_l = update_variable("sample_line_pos_l", line_follower.sample_line_pos_l)
                 base_speed = update_variable("base_speed", base_speed, int)
