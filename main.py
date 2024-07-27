@@ -41,7 +41,7 @@ def update_variable(var_name, default_value, conversion_func=float):
 
 # 摄像头处理线程
 def process_camera_data():
-    global base_speed, ph, pl, pa  # 声明使用全局变量
+    global base_speed, ph, pl, pa, running  # 声明使用全局变量
 
     cap = cam.VideoCapture()
 
