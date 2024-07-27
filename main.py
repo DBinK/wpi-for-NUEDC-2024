@@ -20,8 +20,12 @@ streamer      = Streamer()
 
 if platform.node() == 'WalnutPi':               # 开发板设备名
     com = serial.Serial('/dev/ttyS4', 115200)   # 开发板串口
-# else:
-#     com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
+else:
+    try:    # 开发机器串口
+        com = serial.Serial('/dev/ttyUSB0', 115200) 
+    except Exception as e:
+        print(f"Error opening serial port: {e}")
+        com = None
 
 lock = threading.Lock()
 
@@ -121,7 +125,7 @@ def process_camera_data():
                 
 
             # 发送数据到串口
-            if center_l != None and platform.node() == 'WalnutPi':  # 示例数据： [111,245,456]
+            if com:  # 示例数据： [111,245,456]
                 com.write(f'[{center_l},{center_h},{angle},{l_motor},{r_motor}]'.encode('ascii'))
                 logger.info(f'发送到串口的数据: {l_motor}, {r_motor}')
 
