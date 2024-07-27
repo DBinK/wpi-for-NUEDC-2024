@@ -1,11 +1,12 @@
 # 标准库
 import cv2
 import time
+import yaml
+import serial
 import platform
 import threading
 import numpy as np
 from loguru import logger
-import serial
 
 # 导入自定义模块
 from modules.camera import Camera
@@ -27,11 +28,24 @@ lock = threading.Lock()
 # 初始化变量
 running = 1
 
-base_speed = 160
-ph = 0.2
-pl = 0
-pa = 0
+# 打开并读取YAML文件
+try:
+    with open('config/config.yaml', 'r') as file:
+        config = yaml.safe_load(file)
+except Exception as e:
+    print(f"Error loading YAML file: {e}")
+    config = {}
 
+# 初始化变量
+base_speed = int(config.get('base_speed', 100))  # 默认值为100
+ph         = int(config.get('ph', 0.2))
+pl         = int(config.get('pl', 0))
+pa         = int(config.get('pa', 0))
+
+line_follower.sample_line_pos_h = int(config.get('sample_line_pos_h', 0.1))
+line_follower.sample_line_pos_l = int(config.get('sample_line_pos_l', 0.6))
+
+# 更新变量
 def update_variable(var_name, default_value, conversion_func=float):
     if streamer.variables[var_name] is not None:
         return conversion_func(streamer.variables[var_name])
