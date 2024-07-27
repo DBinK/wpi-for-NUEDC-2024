@@ -19,8 +19,8 @@ streamer      = Streamer()
 
 if platform.node() == 'WalnutPi':               # 开发板设备名
     com = serial.Serial('/dev/ttyS4', 115200)   # 开发板串口
-# else:
-#     com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
+else:
+    com = serial.Serial('/dev/ttyUSB0', 115200) # 开发机器串口
 
 lock = threading.Lock()
 
@@ -62,8 +62,8 @@ def process_camera_data():
 
 
             # 设置电机速度
-            l_motor = 160 + center_h*0.4 + center_l*0 + angle*0
-            r_motor = 160 - center_h*0.4 + center_l*0 + angle*0
+            l_motor = int(160 + center_h*0.4 + center_l*0 + angle*0)
+            r_motor = int(160 - center_h*0.4 + center_l*0 + angle*0)
 
             # 发送数据到 streamer
             with lock:
@@ -74,8 +74,8 @@ def process_camera_data():
                 streamer.variables["center_h"] = center_h
                 streamer.variables["angle"]    = round(angle,2)
 
-                streamer.variables["l_motor"]  = int(l_motor)
-                streamer.variables["r_motor"]  = int(r_motor)
+                streamer.variables["l_motor"]  = l_motor
+                streamer.variables["r_motor"]  = r_motor
 
                 # 从 streamer 更新数据
                 if streamer.variables["sample_line_pos_h"] is not None:
@@ -85,9 +85,9 @@ def process_camera_data():
                     line_follower.sample_line_pos_l = float(streamer.variables["sample_line_pos_l"]) * 0.01
 
             # 发送数据到串口
-            # if center_l != None:  # 示例数据： [111,245,456]
-            #     com.write(f'[{center_l},{center_h},{angle}]'.encode('ascii'))
-            #     logger.info(f'发送到串口的数据: {center_l}')
+            if center_l != None:  # 示例数据： [111,245,456]
+                com.write(f'[{center_l},{center_h},{angle},{l_motor},{r_motor}]'.encode('ascii'))
+                logger.info(f'发送到串口的数据: {center_l}')
 
         else:
             logger.error('读取摄像头失败')
