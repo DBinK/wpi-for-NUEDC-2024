@@ -38,7 +38,6 @@ uart.write("Hello 01Studio!")  # 发送一条数据
 print("开始串口通信")
 
 while True:
-
     # 判断有无收到信息
     if uart.any():
         text = uart.read(128)  # 接收128个字符
@@ -46,14 +45,17 @@ while True:
         
         print(decoded_data)
         
-        values = decoded_data.split(",")     # 使用 split 方法分割字符串
+        # 去掉方括号并分割字符串
+        decoded_data = decoded_data.strip('[]')  # 去掉方括号
+        values = decoded_data.split(",")  # 使用 split 方法分割字符串
 
-        center_h = int(values[0].strip())    # 转换为整数并去除空格
-        center_l = int(values[1].strip())    # 转换为整数并去除空格
-        angle    = float(values[2].strip())  # 转换为浮点数并去除空格
+        # 转换为整数并去除空格
+        center_h = int(values[0].strip())    
+        center_l = int(values[1].strip())    
+        angle    = float(values[2].strip())  
         l_motor_sp  = int(values[3].strip())
-        r_motor_sp  = int(values[4].strip()) 
-
+        r_motor_sp  = int(values[4].strip())
+        
     if line_follow:
         # moto.Motor_Control(center_h)
         # print(center_l)
