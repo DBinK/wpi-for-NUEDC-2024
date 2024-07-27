@@ -1,5 +1,4 @@
 from machine import PWM, Pin  # type: ignore
-import math
 import time
 
 class Servo:
@@ -18,18 +17,21 @@ class Servo:
 
     def set_angle(self, targe_angle):  #绝对角度运动
 
-        print(f"当前目标角度: {targe_angle}")
+        print(f"\n传入目标角度: {targe_angle}")
 
         targe_angle = min(max(targe_angle, 0), self.max_angle)
-
+    
+        print(f"实际可达角度: {targe_angle}\n")
+        
         self.targe_angle = targe_angle
 
-        self.us = self.min_us + (self.max_us - self.min_us) * (targe_angle / self.max_angle)
-        ns = int(self.us * 1000)
+        us = self.min_us + (self.max_us - self.min_us) * (targe_angle / self.max_angle)
+        ns = int(us * 1000)
+        
         self.pwm.duty_ns(ns)
 
     def set_angle_relative(self, relative_angle):  # 相对角度运动
-        print(f"目标相对运动角度: {self.relative_angle}")
+        print(f"传入相对角度: {relative_angle}\n")
         self.targe_angle += relative_angle
         self.set_angle(self.targe_angle)
 
@@ -39,7 +41,7 @@ class Servo:
     def deinit(self): # 注销舵机
         self.pwm.deinit()
 
-    def test(self):
+    def test_45(self):
         
         print("\n45 度角转动测试\n")
         self.set_angle(0)
@@ -52,7 +54,9 @@ class Servo:
         time.sleep(1)
         self.set_angle(180)
         time.sleep(1)
-
+    
+    def test_0_180(self):
+        
         print("\n0-180 度角转动测试\n")
         for i in range(0, 180, 1):
             self.set_angle(i)
@@ -61,7 +65,8 @@ class Servo:
         for i in range(180, 0, -1):
             self.set_angle(i)
             time.sleep(0.01)
-        
+
+    def test_relative(self):
         print("\n相对角度转动测试\n")
         self.set_angle_relative(90)
         time.sleep(1)
@@ -69,15 +74,16 @@ class Servo:
         time.sleep(1)
         self.set_angle_relative(-90)
         time.sleep(1)
-        
+
+    def test_step(self):    
         print("\n步进转动测试\n")
-        for i in range(0, 30):
+        for i in range(0, 300):
             self.step()
-            time.sleep(1)
+            time.sleep(0.01)
             
         self.deinit()
 
 if __name__ == "__main__":
 
     servo = Servo(4)
-    servo.test()
+    servo.test_step()
