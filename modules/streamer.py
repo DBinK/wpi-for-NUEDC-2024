@@ -72,8 +72,11 @@ class Streamer:
         """
         将变量保存到 YAML 文件
         """
+        # 将 NumPy 对象转换为原生 Python 类型
+        variables_to_save = {key: (value.item() if isinstance(value, np.generic) else value.tolist() if isinstance(value, np.ndarray) else value) for key, value in self.variables.items()}
+        
         with open('config/config.yaml', 'w') as file:
-            yaml.dump(self.variables, file)
+            yaml.dump(variables_to_save, file)
             logger.info("变量已保存到 variables.yaml")
 
     def run(self):

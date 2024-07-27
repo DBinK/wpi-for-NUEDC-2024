@@ -107,7 +107,7 @@ def process_camera_data():
                 
 
             # 发送数据到串口
-            if center_l != None:  # 示例数据： [111,245,456]
+            if center_l != None and platform.node() == 'WalnutPi':  # 示例数据： [111,245,456]
                 com.write(f'[{center_l},{center_h},{angle},{l_motor},{r_motor}]'.encode('ascii'))
                 logger.info(f'发送到串口的数据: {l_motor}, {r_motor}')
 
