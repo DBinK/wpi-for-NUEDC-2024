@@ -10,7 +10,7 @@ from neopixel import NeoPixel
 
 # 释放所有GPIO, 断电重上电不再失控
 def release_all_GPIO():
-    for i in range(0, 21):
+    for i in range(0, 48):
         try:
             Pin(i).off()
         except:
@@ -24,8 +24,8 @@ def rgb(value):
     GREEN =(0,10,0)
     BLUE  =(0,0,1)
 
-    pin = Pin(8, Pin.OUT)
-    np = NeoPixel(pin, 1)
+    pin = Pin(48, Pin.OUT)
+    np = NeoPixel(pin, 10)
 
     def write(value):
         np.fill(value)
@@ -39,6 +39,7 @@ def rgb(value):
         write(GREEN)
     elif value == 3:
         write(RED)
+        
 #WIFI连接函数
 def WIFI_Connect():
 

@@ -3,8 +3,9 @@ import time
 
 class Servo:
     def __init__(
-        self, pin, freq=50, min_us=500, max_us=2500, max_angle=180, min_accu=0.3
+        self, pin, freq=50, min_us=500, max_us=2500, max_angle=180, min_accu=0.3, targe_angle=90
     ):
+        self.pin = pin
         self.pwm = PWM(Pin(pin), freq=freq, duty=0)
 
         self.freq      = freq      # 频率
@@ -13,25 +14,26 @@ class Servo:
         self.max_angle = max_angle # 最大角度
         self.min_accu  = min_accu  # 最小精度
 
-        self.targe_angle = 0       # 目标角度
+        self.targe_angle = targe_angle # 初始化目标角度
+        self.set_angle(targe_angle)
 
     def set_angle(self, targe_angle):  #绝对角度运动
 
-        print(f"\n传入目标角度: {targe_angle}")
+        print(f"set_angle(): 传入舵机 {self.pin} 目标角度: {targe_angle}")
 
         targe_angle = min(max(targe_angle, 0), self.max_angle)
     
-        print(f"实际可达角度: {targe_angle}\n")
+        print(f"set_angle(): 实际舵机 {self.pin} 可达角度: {targe_angle}\n")
         
         self.targe_angle = targe_angle
-
+    
         us = self.min_us + (self.max_us - self.min_us) * (targe_angle / self.max_angle)
         ns = int(us * 1000)
         
         self.pwm.duty_ns(ns)
 
     def set_angle_relative(self, relative_angle):  # 相对角度运动
-        print(f"传入相对角度: {relative_angle}\n")
+        print(f"set_angle_relative(): 传入舵机 {self.pin} 相对角度: {relative_angle}\n")
         self.targe_angle += relative_angle
         self.set_angle(self.targe_angle)
 
@@ -72,18 +74,21 @@ class Servo:
         time.sleep(1)
         self.set_angle_relative(-45)
         time.sleep(1)
-        self.set_angle_relative(-90)
+        self.set_angle_relative(-900)
         time.sleep(1)
 
     def test_step(self):    
         print("\n步进转动测试\n")
-        for i in range(0, 300):
+        for i in range(0, 30):
             self.step()
             time.sleep(0.1)
-            
-        self.deinit()
 
 if __name__ == "__main__":
 
-    servo = Servo(4)
-    servo.test_step()
+    # servo_x = Servo(47)
+    # servo_x.test_relative()
+    # servo_x.test_step()
+    
+    servo_y = Servo(20)
+    servo_y.test_relative()
+    # servo_y.test_step()
