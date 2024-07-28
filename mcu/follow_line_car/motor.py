@@ -43,7 +43,9 @@ class Motor:
             self.l_motor(160 + pixel*0.4)
             self.r_motor(160 - pixel*0.4)
 
+
 if __name__ == '__main__':
+
     motor = Motor()
 
     while True:

@@ -43,35 +43,40 @@ class Camera:
 
         return serial
 
-    def VideoCapture(self, index=None, ID_USB_SERIAL=None):
+    def VideoCapture(self, index=None, camera_name=None):
         
-        if not index:
+        if not index and not camera_name:
             camera_index = self.find_available_cameras()
             if camera_index:
                 cap = cv2.VideoCapture(camera_index[0])
                 if not cap.isOpened():
                     raise ValueError(f"Unable to open camera {camera_index}")
                 self.cap = cap  
-
-                # 打印摄像头信息
-                result = subprocess.run(["v4l2-ctl", "--all"], capture_output=True, text=True)
-                logger.info(result.stdout)
-                logger.info(f"Camera {camera_index} is initialized.")
-
-                return self.cap
-            
             else:
                 raise ValueError("No cameras found")
-        else:
+            
+        elif index:
             cap = cv2.VideoCapture(index)
             if not cap.isOpened():
                 raise ValueError(f"Unable to open camera {index}")
             self.cap = cap  
-            result = subprocess.run(["v4l2-ctl", "--all"], capture_output=True, text=True)
-            logger.info(result.stdout)
-            logger.info(f"Camera {index} is initialized.")
+            
+        elif camera_name:
+            camera_index = self.find_camera_id(camera_name)            
+            if camera_index:
+                cap = cv2.VideoCapture(camera_index)
+                if not cap.isOpened():
+                    raise ValueError(f"Unable to open camera {camera_index}")
+                self.cap = cap  
+            else:
+                raise ValueError("No cameras found")
 
-            return cap
+        result = subprocess.run(["v4l2-ctl", "--all"], capture_output=True, text=True)
+        logger.info(result.stdout)
+        logger.info(f"Camera {index} is initialized.")
+        
+        return cap
+
     
     def set_exposure_time(self, exposure_time):
         """
@@ -90,6 +95,38 @@ class Camera:
         self.contrast = contrast
         subprocess.run(["v4l2-ctl", "-c", f"contrast={contrast}"])
 
+    def find_camera_id(self, camera_name): # 从 v4l2-ctl --list-devices 获取 camera_name
+        # 运行命令并获取输出
+        output = subprocess.check_output(['v4l2-ctl', '--list-devices'], text=True)
+
+        # 初始化字典
+        device_dict = {}
+
+        # 处理输出
+        lines = output.strip().split('\n')
+        device_name = None
+
+        for line in lines:
+            line = line.strip()
+            if line:  # 如果行不为空
+                if line.endswith(':'):
+                    # 这是设备名
+                    device_name = line[:-1]  # 去掉末尾的冒号
+                else:
+                    # 这是设备路径
+                    device_path = line
+                    # 将设备名和设备路径存入字典
+                    if device_name in device_dict:
+                        device_dict[device_name].append(device_path)
+                    else:
+                        device_dict[device_name] = [device_path]
+
+        camera_id = int(device_dict[camera_name][0][10])
+        logger.info(device_dict)
+        logger.info(camera_id)
+
+        return camera_id
+
     def test(self):
         if self.cap is not None:
             while True:
@@ -104,8 +141,10 @@ class Camera:
 
 
 if __name__ == "__main__":
-    cam = Camera(1000)  # 实例化Camera类
-    cap = cam.VideoCapture()  # 测试摄像头
+    cam = Camera()  # 实例化Camera类
+    cap = cam.VideoCapture(
+        camera_name = 'HD Camera: HD Camera (usb-0000:00:14.0-3.4)'
+        )  # 测试摄像头
 
     if cap is not None:
         while True:

@@ -111,16 +111,24 @@ class PID(object):
             dt = now - self._last_time if (now - self._last_time) else 1e-16
         elif dt <= 0:
             # 时间差必须大于0
-            raise ValueError('dt has negative value {}, must be positive'.format(dt))
+            raise ValueError("dt has negative value {}, must be positive".format(dt))
 
         # 根据采样时间决定是否更新输出
-        if self.sample_time is not None and dt < self.sample_time and self._last_output is not None:
+        if (
+            self.sample_time is not None
+            and dt < self.sample_time
+            and self._last_output is not None
+        ):
             return self._last_output
 
         # 计算误差和其变化量
         error = self.setpoint - input_
-        d_input = input_ - (self._last_input if (self._last_input is not None) else input_)
-        d_error = error - (self._last_error if (self._last_error is not None) else error)
+        d_input = input_ - (
+            self._last_input if (self._last_input is not None) else input_
+        )
+        d_error = error - (
+            self._last_error if (self._last_error is not None) else error
+        )
 
         # 如果有错误转换函数，应用之
         if self.error_map is not None:
@@ -159,14 +167,14 @@ class PID(object):
         :return: 字符串表示
         """
         return (
-            '{self.__class__.__name__}('
-            'Kp={self.Kp!r}, Ki={self.Ki!r}, Kd={self.Kd!r}, '
-            'setpoint={self.setpoint!r}, sample_time={self.sample_time!r}, '
-            'output_limits={self.output_limits!r}, auto_mode={self.auto_mode!r}, '
-            'proportional_on_measurement={self.proportional_on_measurement!r}, '
-            'differential_on_measurement={self.differential_on_measurement!r}, '
-            'error_map={self.error_map!r}'
-            ')'
+            "{self.__class__.__name__}("
+            "Kp={self.Kp!r}, Ki={self.Ki!r}, Kd={self.Kd!r}, "
+            "setpoint={self.setpoint!r}, sample_time={self.sample_time!r}, "
+            "output_limits={self.output_limits!r}, auto_mode={self.auto_mode!r}, "
+            "proportional_on_measurement={self.proportional_on_measurement!r}, "
+            "differential_on_measurement={self.differential_on_measurement!r}, "
+            "error_map={self.error_map!r}"
+            ")"
         ).format(self=self)
 
     @property
@@ -251,7 +259,7 @@ class PID(object):
 
         min_output, max_output = limits
         if (None not in limits) and (max_output < min_output):
-            raise ValueError('lower limit must be less than upper limit')
+            raise ValueError("lower limit must be less than upper limit")
 
         self._min_output = min_output
         self._max_output = max_output

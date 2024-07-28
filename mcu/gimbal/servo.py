@@ -44,7 +44,6 @@ class Servo:
         self.pwm.deinit()
 
     def test_45(self):
-        
         print("\n45 度角转动测试\n")
         self.set_angle(0)
         time.sleep(1)
@@ -56,9 +55,8 @@ class Servo:
         time.sleep(1)
         self.set_angle(180)
         time.sleep(1)
-    
+
     def test_0_180(self):
-        
         print("\n0-180 度角转动测试\n")
         for i in range(0, 180, 1):
             self.set_angle(i)
@@ -92,3 +90,7 @@ if __name__ == "__main__":
     servo_y = Servo(20)
     servo_y.test_relative()
     # servo_y.test_step()
+
+    servo_y.targe_angle(10)
+
+    

@@ -14,6 +14,10 @@ def capture_image(cam=0):
     cap = cv2.VideoCapture(cam)
     ret, img = cap.read()
 
+    [[[0,0,0],[0,0,0],[0,0,0]],
+     [[0,0,0],[0,0,0],[0,0,0]],
+     [[0,0,0],[0,0,0],[0,0,0]]]
+
     logger.info(f'Captured image {ret}')
 
     cv2.imwrite('output/captured_image.jpg', img)
@@ -56,8 +60,20 @@ if __name__ == '__main__':
 
     logger.info(f'开始预测')
 
-    img = capture_image(0)
+    cap = cv2.VideoCapture(0)
 
-    predict(img)
-    
+    if cap is not None:
+        while True:
+            ret, frame = cap.read()
+            if ret:
+
+                PD_frame = predict(frame)
+
+                cv2.imshow("frame", PD_frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
+    cv2.destroyAllWindows()
+    if cap is not None:
+        cap.release()
 

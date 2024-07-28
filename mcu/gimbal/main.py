@@ -48,3 +48,5 @@ while True:
                 servo_y.set_angle_relative(angle_dy)
                 
             buffer = buffer[end_index:]  # 保留未处理的数据
+            
+            uart.write(f"收到 {angle_dx}, {angle_dy}")  # 发送一条数据
