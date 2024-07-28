@@ -7,17 +7,6 @@ uart.write("Hello 01Studio!")  # 发送一条数据
 servo_x = Servo(47)
 servo_y = Servo(48)
 
-angle_dx = None
-angle_dy = None
-from machine import UART
-from servo import Servo
-
-uart = UART(1, 115200, rx=2, tx=1)  # 设置串口号1和波特率
-uart.write("Hello 01Studio!")  # 发送一条数据
-
-servo_x = Servo(47)
-servo_y = Servo(48)
-
 buffer = b""  # 创建一个缓冲区
 frame_header = b'['  # 定义帧头
 frame_footer = b']'  # 定义帧尾
@@ -53,9 +42,9 @@ while True:
             print(f"{angle_dx}, {angle_dy}")
 
             if angle_dx:
-                servo_x.set_angle(angle_dx)
+                servo_x.set_angle_relative(angle_dx)
             
             if angle_dy:
-                servo_y.set_angle(angle_dy)
+                servo_y.set_angle_relative(angle_dy)
                 
             buffer = buffer[end_index:]  # 保留未处理的数据
