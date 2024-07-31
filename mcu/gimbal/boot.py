@@ -18,6 +18,10 @@ def release_all_GPIO():
 
 release_all_GPIO()
 
+
+LED=Pin(8,Pin.OUT) #构建led对象，GPIO46,输出
+LED.value(1) #点亮LED，也可以使用led.on()
+
 def rgb(value):
     BLACK =(0,0,0)
     RED   =(10,0,0)
@@ -44,6 +48,7 @@ def rgb(value):
 def WIFI_Connect():
 
     # WIFI_LED=Pin(46, Pin.OUT) #初始化WIFI指示灯
+    
 
     wlan = network.WLAN(network.STA_IF) #STA模式
     wlan.active(True)                   #激活接口
@@ -51,14 +56,17 @@ def WIFI_Connect():
 
     if not wlan.isconnected():
         print('connecting to network...')
-        wlan.connect('DT46', '12345678') #输入WIFI账号密码
+        #wlan.connect('DT46', '12345678') #输入WIFI账号密码
+        #wlan.connect('ovo', '00000000') #输入WIFI账号密码
+        #wlan.connect('K40', '00000000') #输入WIFI账号密码
+        wlan.connect('mifi', '00000000') #输入WIFI账号密码
 
         while not wlan.isconnected():
 
             #LED闪烁提示
-            rgb(1)
+            LED.value(1)
             time.sleep_ms(300)
-            rgb(0)
+            LED.value(0)
             time.sleep_ms(300)
 
             #超时判断,15秒没连接成功判定为超时
@@ -69,7 +77,7 @@ def WIFI_Connect():
     if wlan.isconnected():
         
         #LED点亮
-        rgb(1)
+        LED.value(1)
 
         #串口打印信息
         print('network information:', wlan.ifconfig())

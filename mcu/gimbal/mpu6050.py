@@ -6,11 +6,7 @@ class accel():
         self.iic = i2c
         self.addr = addr
         self.iic.start()
-        try:
-            self.iic.writeto(self.addr, bytearray([107, 0]))
-        except OSError as e:
-            print(e)
-            self.iic.writeto(self.addr, bytearray([107, 0]))
+        self.iic.writeto(self.addr, bytearray([107, 0]))
         self.iic.stop()
 
     def get_raw_values(self):
@@ -49,3 +45,11 @@ class accel():
         while 1:
             print(self.get_values())
             sleep(0.05)
+
+if __name__ == "__main__":
+    from time import sleep
+    i2c = machine.I2C(scl=machine.Pin(2), sda=machine.Pin(1))
+    mpu = accel(i2c)
+    while 1:
+        print(mpu.get_values())
+        sleep(0.05)
