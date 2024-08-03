@@ -25,7 +25,7 @@ peer.on_write(on_rx) #从机接收回调函数，收到数据会进入on_rx函�
 
 # 创建舵机对象
 servo_x = Servo(5)
-servo_x.set_limit(60,120)
+servo_x.set_limit(30,150)
 
 servo_y = Servo(6)
 servo_y.set_limit(60,120)
@@ -60,8 +60,12 @@ while True:
             values = decoded_data.split(",")  # 使用 split 方法分割字符串
 
             try:
-                angle_dx = float(values[0].strip())  
+                angle_dx = -float(values[0].strip())  
                 angle_dy = float(values[1].strip())
+            
+                
+                angle_x = -float(values[2].strip())  
+                angle_y = float(values[3].strip())
                 
             except ValueError:
                 print("Invalid data")
@@ -70,10 +74,16 @@ while True:
 
             if angle_dx:
                 servo_x.set_angle_relative(angle_dx)
-            
+
             if angle_dy:
                 servo_y.set_angle_relative(angle_dy)
                 
+            if angle_x:
+                servo_x.set_angle(angle_x)
+
+            if angle_y:
+                servo_y.set_angle(angle_y)
+                
             buffer = buffer[end_index:]  # 保留未处理的数据
             
-            uart.write(f"收到 {angle_dx}, {angle_dy}")  # 发送一条数据
+            uart.write(f"收到 {angle_dx}, {angle_dy}, {angle_x}, {angle_y}")  # 发送一条数据

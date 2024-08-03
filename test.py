@@ -1,68 +1,66 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def find_valid_average(data):
-    # 转换为numpy数组并排序
-    data = np.array(data)
-    data.sort()
+# 设置中文字体# 设置全局字体为Noto CJK系列字体
+plt.rcParams['font.family'] = 'Noto Sans CJK JP'  # 或者 'Noto Serif CJK'
+plt.rcParams['axes.unicode_minus'] = False  # 解决负号 '-' 显示为方块的问题
 
-    # 定义窗口大小和密度阈值
-    window_size = 5
-    density_threshold = 2  # 选择密度大于2的区域
+# 生成模拟数据
+np.random.seed(0)
+num_steps = 100
+true_position = np.linspace(0, 10, num_steps)  # 真实位置
+observations = true_position + np.random.normal(0, 0.5, num_steps)  # 添加噪声的观测值
 
-    # 计算每个数据点的密度
-    valid_data = []
-    for point in data:
-        # 计算在窗口内的数据数量
-        count = np.sum((data >= point - window_size / 2) & (data <= point + window_size / 2))
-        if count > density_threshold:
-            valid_data.append(point)
+# 卡尔曼滤波器实现
+class KalmanFilter:
+    def __init__(self, A, H, Q, R, P, x):
+        self.A = A  # 状态转移矩阵
+        self.H = H  # 观测矩阵
+        self.Q = Q  # 过程噪声协方差
+        self.R = R  # 观测噪声协方差
+        self.P = P  # 估计误差协方差
+        self.x = x  # 初始状态
 
-    # 计算有效数据的平均值
-    if valid_data:
-        print("有效数据为:", valid_data)
-        average = np.mean(valid_data)
-        print(f"有效数据的平均值为: {average:.2f}")
-        return average
-    else:
-        print("没有有效数据可计算平均值。")
-        return None
+    def predict(self):
+        self.x = np.dot(self.A, self.x)
+        self.P = np.dot(np.dot(self.A, self.P), self.A.T) + self.Q
+        return self.x
 
-# 定义角度数据
+    def update(self, z):
+        y = z - np.dot(self.H, self.x)
+        S = np.dot(self.H, np.dot(self.P, self.H.T)) + self.R
+        K = np.dot(np.dot(self.P, self.H.T), np.linalg.inv(S))
+        self.x = self.x + np.dot(K, y)
+        self.P = self.P - np.dot(K, self.H) @ self.P
+        return self.x
 
-angles = [61.19995, 71.99997, 117.9, 110.7, 62.09995, 72.89996, 117.9, 111.6, 62.09995, 71.99996, 117.9, 110.7, 62.09995, 71.99996, 117.0, 111.6, 61.19994, 71.99996, 108.9, 62.09995, 71.99996, 62.09995, 71.99996, 62.09995, 71.99996, 62.09995, 71.09996, 62.09995, 71.99996, 62.09995, 71.99996, 62.09995, 71.99996, 62.09995, 71.09996, 62.09995, 71.99996, 61.19994]
+# 初始化卡尔曼滤波器参数
+A = np.array([[1]])  # 状态转移矩阵
+H = np.array([[1]])  # 观测矩阵
+Q = np.array([[1e-5]])  # 过程噪声协方差
+R = np.array([[1]])  # 观测噪声协方差
+P = np.array([[1]])  # 估计误差协方差
+x = np.array([[0]])  # 初始状态
 
+kf = KalmanFilter(A, H, Q, R, P, x)
 
-# 计算平均值
-average_value = np.mean(angles)
-# 计算平均值
-average_value = find_valid_average(angles)
+# 存储预测结果
+predictions = []
 
-# 将角度转换为弧度
-angles = np.radians(angles)
+# 对每个观测值应用卡尔曼滤波器
+for z in observations:
+    kf.predict()
+    prediction = kf.update(z)
+    predictions.append(prediction[0, 0])
 
-# 计算对应的x和y坐标
-x = np.cos(angles)
-y = np.sin(angles)
-
-# 绘制点云图
-plt.figure(figsize=(6, 6))
-plt.scatter(x, y, color='blue', marker='o', label='angles',s=10)
-
-# 添加表示平均值的红色点
-average_x = np.cos(np.radians(average_value))
-average_y = np.sin(np.radians(average_value))
-plt.scatter(average_x, average_y, color='red', marker='o', s=10, label='average')
-
-# 设置图形属性
-plt.xlim(-1.5, 1.5)
-plt.ylim(-1.5, 1.5)
-plt.axhline(0, color='gray', lw=0.5, ls='--')
-plt.axvline(0, color='gray', lw=0.5, ls='--')
-plt.title('Point clouds and averages')
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.gca().set_aspect('equal', adjustable='box')  # 设置坐标轴比例相等
-plt.grid()
+# 可视化结果
+plt.figure(figsize=(10, 6))
+plt.plot(true_position, label='真实位置', color='g')
+plt.scatter(range(num_steps), observations, label='观测值', color='r', s=10)
+plt.plot(predictions, label='卡尔曼滤波预测', color='b')
+plt.xlabel('时间步')
+plt.ylabel('位置')
+plt.title('卡尔曼滤波器结果可视化')
 plt.legend()
+plt.grid()
 plt.show()
