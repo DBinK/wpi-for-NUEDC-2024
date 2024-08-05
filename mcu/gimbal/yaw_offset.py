@@ -4,11 +4,14 @@ import time
 import math
 from filter import window_filter, KalmanAngle
 
+GYRO_SENSI = 250/32768
+RAG2DEG = 180/math.pi
+
 # 创建 KalmanAngle 实例
 kalman_filter = KalmanAngle()
 
 # 设置初始角度（假设为0度）
-kalman_filter.setAngle(90)
+kalman_filter.setAngle(0)
 
 class MPU6050Controller:
     def __init__(self, scl_pin, sda_pin, 
@@ -42,13 +45,34 @@ class MPU6050Controller:
         self.timer = None
 
 
-    def test_yaw_offset(self):
+    def test_gyro_offset(self, times=100):
         """
         测试零漂误差参数
         """
-        pass
+        real_gyros = []
+        cnt = 1
+
+        while cnt < times:
+            gyro = self.mpu.get_values()['GyX'], self.mpu.get_values()['GyY'], self.mpu.get_values()['GyZ']
+            real_gyro = gyro[2] * GYRO_SENSI
+
+            real_gyro_avg = window_filter(real_gyro, real_gyros, cnt)
+
+            print(f"gyro: {real_gyro}, avg: {real_gyro_avg}, cnt: {cnt}")
+
+            cnt += 1
+            
+            time.sleep(0.02)
+        
+        print(f"零漂是 :{real_gyro_avg}")
+            
+        return real_gyro_avg
 
     def test(self):
+        
+        real_gyro_avg = self.test_gyro_offset(200)
+        
+        # real_gyro_avg = 0
 
         while True:
 
@@ -56,13 +80,15 @@ class MPU6050Controller:
 
             gyro = self.mpu.get_values()['GyX'], self.mpu.get_values()['GyY'], self.mpu.get_values()['GyZ']
             
-            self.yaw += gyro[2] * self.dt2 * 0.001 - self.fix_yaw_offset #! 零漂误差参数
-            self.yaw_deg = self.yaw * 180 / math.pi
+            real_gyro = gyro[2] * GYRO_SENSI - real_gyro_avg #! 零漂误差参数
+            
+            self.yaw += real_gyro * self.dt2
+            
+            self.yaw_deg = self.yaw * RAG2DEG
             
             self.yaw_offset = self.yaw - self.yaw_last
             
-            
-            avg_yaw_offset  = window_filter(self.yaw_offset, self.yaw_offset_values, self.window_size)
+            avg_yaw_offset  = window_filter(self.yaw_offset, self.yaw_offset_values, 50)
             
             newRate = self.yaw_offset / self.dt2
             # self.yaw_deg   = window_filter(self.yaw_deg, self.yaw_deg_values, 3)
@@ -74,7 +100,7 @@ class MPU6050Controller:
             self.uart.write(uart_msg)
             print(uart_msg)
 
-            self.yaw_last   = self.yaw
+            self.yaw_last = self.yaw
 
             time.sleep(0.02)
 
@@ -89,10 +115,14 @@ class MPU6050Controller:
 
 if __name__ == "__main__":
     
-    LED=Pin(4,Pin.OUT) #构建led对象，GPIO46,输出
-    LED.value(1) #点亮LED，也可以使用led.on()
+    VCC = Pin(3,Pin.OUT,value=1) 
+    GND = Pin(2,Pin.OUT,value=0) 
+
 
     time.sleep(2)
     
-    controller = MPU6050Controller(0, 1)
+    controller = MPU6050Controller(scl_pin=1,sda_pin=0)
+    
+    # controller.test_gyro_offset(1000)
+    
     controller.test()

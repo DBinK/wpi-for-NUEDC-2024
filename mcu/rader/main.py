@@ -3,7 +3,7 @@ import time
 from machine import UART, Pin  # type: ignore
 from servo import Servo
 
-uart = UART(1, 115200, rx=8, tx=7)  # 设置串口号1和波特率
+uart = UART(1, 115200, rx=21, tx=20)  # 设置串口号1和波特率
 uart.write("Hello 01Studio!")  # 发送一条数据
 
 servo = Servo(5)
