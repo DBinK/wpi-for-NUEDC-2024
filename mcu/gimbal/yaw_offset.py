@@ -49,10 +49,15 @@ class MPU6050Controller:
         """
         测试零漂误差参数
         """
+        
+        LED = Pin(8,Pin.OUT,value=1)
+        
         real_gyros = []
         cnt = 1
 
         while cnt < times:
+            LED.value(1)
+            
             gyro = self.mpu.get_values()['GyX'], self.mpu.get_values()['GyY'], self.mpu.get_values()['GyZ']
             real_gyro = gyro[2] * GYRO_SENSI
 
@@ -63,14 +68,16 @@ class MPU6050Controller:
             cnt += 1
             
             time.sleep(0.02)
+            
+            LED.value(0)
         
-        print(f"零漂是 :{real_gyro_avg}")
+        print(f"零漂是{real_gyro_avg}")
             
         return real_gyro_avg
 
     def test(self):
         
-        real_gyro_avg = self.test_gyro_offset(200)
+        real_gyro_avg = self.test_gyro_offset(400)
         
         # real_gyro_avg = 0
 
@@ -84,7 +91,7 @@ class MPU6050Controller:
             
             self.yaw += real_gyro * self.dt2
             
-            self.yaw_deg = self.yaw * RAG2DEG
+            self.yaw_deg = self.yaw # * 180/math.pi
             
             self.yaw_offset = self.yaw - self.yaw_last
             
@@ -92,13 +99,16 @@ class MPU6050Controller:
             
             newRate = self.yaw_offset / self.dt2
             # self.yaw_deg   = window_filter(self.yaw_deg, self.yaw_deg_values, 3)
-            self.yaw_deg   = kalman_filter.getAngle(self.yaw, newRate, self.dt2)
+            self.yaw_deg_filted  = kalman_filter.getAngle(self.yaw, newRate, self.dt2)
             
             self.cnt += 1
             
-            uart_msg = f"yaw: {self.yaw_deg}, offset: {avg_yaw_offset}, cnt: {self.cnt}, delay: {self.dt2}\n"
+            print_msg = f"yaw: {self.yaw_deg}, offset: {avg_yaw_offset}, cnt: {self.cnt}, delay: {self.dt2}\n"
+            uart_msg = f"{self.yaw_deg_filted:.6f},{self.yaw_deg:.6f},{self.cnt},{self.dt2}\n"
+
             self.uart.write(uart_msg)
-            print(uart_msg)
+
+            # print(print_msg)
 
             self.yaw_last = self.yaw
 
