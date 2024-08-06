@@ -77,7 +77,7 @@ class MPU6050Controller:
 
     def test(self):
         
-        real_gyro_avg = self.test_gyro_offset(400)
+        real_gyro_avg = self.test_gyro_offset(1000)
         
         # real_gyro_avg = 0
 
@@ -90,21 +90,21 @@ class MPU6050Controller:
             real_gyro = gyro[2] * GYRO_SENSI - real_gyro_avg #! 零漂误差参数
             
             self.yaw += real_gyro * self.dt2
-            
-            self.yaw_deg = self.yaw # * 180/math.pi
-            
+                        
             self.yaw_offset = self.yaw - self.yaw_last
             
             avg_yaw_offset  = window_filter(self.yaw_offset, self.yaw_offset_values, 50)
             
             newRate = self.yaw_offset / self.dt2
             # self.yaw_deg   = window_filter(self.yaw_deg, self.yaw_deg_values, 3)
-            self.yaw_deg_filted  = kalman_filter.getAngle(self.yaw, newRate, self.dt2)
+            self.yaw_filted  = kalman_filter.getAngle(self.yaw, newRate, self.dt2)
             
             self.cnt += 1
             
-            print_msg = f"yaw: {self.yaw_deg}, offset: {avg_yaw_offset}, cnt: {self.cnt}, delay: {self.dt2}\n"
-            uart_msg = f"{self.yaw_deg_filted:.6f},{self.yaw_deg:.6f},{self.cnt},{self.dt2}\n"
+            print_msg = f"yaw: {self.yaw}, offset: {avg_yaw_offset}, cnt: {self.cnt}, delay: {self.dt2}\n"
+            uart_msg = f"{self.yaw_filted},{self.yaw},{self.cnt},{self.dt2}\n"
+
+            #uart_msg = f"{self.yaw_filted:.6f},{self.yaw:.6f},{self.cnt},{self.dt2}\n"
 
             self.uart.write(uart_msg)
 
