@@ -5,9 +5,21 @@ import bluetooth,ble_simple_peripheral
 from imu import Accel
 from encoder import HallEncoder
 from motor import Motor
+from pid import PID
 
 IMU_OFFSET = 0.0
-BASE_PWM   = 50
+BASE_PWM   = 0
+
+# 创建传感器对象
+imu       = Accel(9,8)
+encoder_l = HallEncoder(pin_a=2, pin_b=1)
+encoder_r = HallEncoder(pin_a=3, pin_b=4)  
+
+# 创建电机对象
+motor = Motor(6,5,7,10,BASE_PWM)
+
+# 创建PID对象
+pid_v = PID(Kp=0.1, Ki=0, Kd=0.3, setpoint=0, output_limits=(-1023, 1023))
 
 # 创建BLE对象
 ble  = bluetooth.BLE() # 构建BLE对象
@@ -24,13 +36,6 @@ def on_rx(msg):
     
 peer.on_write(on_rx) #从机接收回调函数，收到数据会进入on_rx函数。
 
-# 创建传感器对象
-imu       = Accel(9,8)
-encoder_l = HallEncoder(pin_a=2, pin_b=1)
-encoder_r = HallEncoder(pin_a=3, pin_b=4)  
-
-# 创建电机对象
-motor = Motor(6,5,7,10,BASE_PWM)
 
 while True:
     roll, pitch, yaw = imu.get_angles()
@@ -46,6 +51,8 @@ while True:
     
     v = (roll_fix/90) * 1023
     w = 0
+    
+    v_pid = pid_v(v)
 
     motor.move(v, w)
 
