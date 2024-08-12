@@ -19,7 +19,7 @@ encoder_r = HallEncoder(6, 5)
 motor = Motor(3, 4, 2, 1, BASE_PWM)
 
 # 创建PID对象
-pid = PID(Kp=0.1, Ki=0, Kd=0.00000001, setpoint=0, output_limits=(-1023, 1023))
+pid = PID(kp=0.8, ki=0, kd=0.1, setpoint=0, output_limits=(-1023, 1023))
 
 # 创建BLE对象
 ble = bluetooth.BLE()  # 构建BLE对象
@@ -55,7 +55,7 @@ while True:
     v_linear = (roll_fix / 90) * 1023
     w_angular = 0
 
-    v_linear_pid = -pid(v_linear)
+    v_linear_pid = -pid.update(v_linear)
 
     motor.move(v_linear_pid, w_angular)
 
