@@ -7,7 +7,7 @@ from encoder import HallEncoder
 from motor import Motor
 
 IMU_OFFSET = 0.0
-BASE_PWM = 300
+BASE_PWM   = 50
 
 # 创建BLE对象
 ble  = bluetooth.BLE() # 构建BLE对象
@@ -34,12 +34,16 @@ motor = Motor(6,5,7,10,BASE_PWM)
 
 while True:
     roll, pitch, yaw = imu.get_angles()
-
-    roll_fix = roll - IMU_OFFSET
-
+    
     speed_l = encoder_l.get_speed()
     speed_r = encoder_r.get_speed()
 
+    if abs(pitch) > 10 or abs(roll) > 45:
+        motor.stop()
+        continue
+
+    roll_fix = roll - IMU_OFFSET
+    
     v = (roll_fix/90) * 1023
     w = 0
 

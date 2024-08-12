@@ -1,6 +1,7 @@
 from machine import SoftI2C, Pin
 import math
 import time
+import _thread
 
 class KalmanFilter:
     def __init__(self):
@@ -25,7 +26,6 @@ class KalmanFilter:
 
 class Accel:
     def __init__(self, scl_pin, sda_pin, addr=0x68):
-
         self.iic = SoftI2C(scl=Pin(scl_pin), sda=Pin(sda_pin))
         self.addr = addr
         self.iic.start()
@@ -36,6 +36,17 @@ class Accel:
         self.kalmanX = KalmanFilter()
         self.kalmanY = KalmanFilter()
         self.kalmanZ = KalmanFilter()
+
+        # 初始化角度值
+        self.roll  = 0.0
+        self.pitch = 0.0
+        self.yaw   = 0.0
+
+        # 启动线程更新角度
+        _thread.start_new_thread(self.update_angles, ())
+
+        # 初始化时间
+        self.last_time = time.ticks_ms()
 
     def get_raw_values(self):
         self.iic.start()
@@ -60,52 +71,52 @@ class Accel:
         vals["GyZ"] = self.bytes_toint(raw_ints[12], raw_ints[13])
         return vals  # 返回原始值
 
-    def get_angles(self):
-        vals = self.get_values()
-        acc_x = vals["AcX"]
-        acc_y = vals["AcY"]
-        acc_z = vals["AcZ"]
-        gyro_x = vals["GyX"] / 131.0
-        gyro_y = vals["GyY"] / 131.0
-        gyro_z = vals["GyZ"] / 131.0
-
-        # 计算roll
-        if acc_z != 0:  # 防止除以零
-            roll = math.atan2(acc_y, acc_z) * 180 / math.pi
-        else:
-            roll = 0  # 或者设置为其他默认值
-
-        # 计算pitch
-        if acc_y**2 + acc_z**2 != 0:  # 防止除以零
-            pitch = math.atan(-acc_x / math.sqrt(acc_y**2 + acc_z**2)) * 180 / math.pi
-        else:
-            pitch = 0  # 或者设置为其他默认值
-
-        dt = 0.01  # 假设每次调用间隔为10ms
-        kalman_roll = self.kalmanX.get_angle(roll, gyro_x, dt)
-        kalman_pitch = self.kalmanY.get_angle(pitch, gyro_y, dt)
-
-        # 计算yaw
-        if acc_x != 0:  # 防止除以零
-            yaw = math.atan2(acc_y, acc_x) * 180 / math.pi
-        else:
-            yaw = 0  # 或者设置为其他默认值
-
-        kalman_yaw = self.kalmanZ.get_angle(yaw, gyro_z, dt)
-
-        return kalman_roll, kalman_pitch, kalman_yaw
-
-    def val_test(self):  # 仅用于测试
+    def update_angles(self):
         while True:
-            roll, pitch, yaw = self.get_angles()
-            print("Roll: {:.2f}, Pitch: {:.2f}, Yaw: {:.2f}".format(roll, pitch, yaw))
-            time.sleep(0.05)
+            current_time = time.ticks_ms()  # 获取当前时间
+            dt = time.ticks_diff(current_time, self.last_time) / 1000.0  # 计算时间差并转换为秒
+            self.last_time = current_time  # 更新上一次时间
+
+            vals = self.get_values()
+            acc_x = vals["AcX"]
+            acc_y = vals["AcY"]
+            acc_z = vals["AcZ"]
+            gyro_x = vals["GyX"] / 131.0
+            gyro_y = vals["GyY"] / 131.0
+            gyro_z = vals["GyZ"] / 131.0
+
+            # 计算roll
+            if acc_z != 0:
+                roll = math.atan2(acc_y, acc_z) * 180 / math.pi
+            else:
+                roll = 0
+
+            # 计算pitch
+            if acc_y**2 + acc_z**2 != 0:
+                pitch = math.atan(-acc_x / math.sqrt(acc_y**2 + acc_z**2)) * 180 / math.pi
+            else:
+                pitch = 0
+
+            self.roll = self.kalmanX.get_angle(roll, gyro_x, dt)
+            self.pitch = self.kalmanY.get_angle(pitch, gyro_y, dt)
+
+            # 计算yaw 
+            # if acc_x != 0:
+            #     yaw = math.atan2(acc_y, acc_x) * 180 / math.pi
+            # else:
+            #     yaw = 0
+
+            # self.yaw = self.kalmanZ.get_angle(yaw, gyro_z, dt)
+
+            time.sleep(0.01)  # 每次更新间隔
+
+    def get_angles(self):
+        return self.roll, self.pitch, self.yaw
 
 if __name__ == "__main__":
-
-    mpu = Accel(9,8)
+    mpu = Accel(9, 8)
     
     while True:
-        roll, pitch, yaw = mpu.get_angles()
-        print("Roll: {:.2f}, Pitch: {:.2f}, Yaw: {:.2f}".format(roll, pitch, yaw))
+        roll, pitch, _ = mpu.get_angles()
+        print("Roll: {:.2f}, Pitch: {:.2f}".format(roll, pitch))
         time.sleep(0.05)
