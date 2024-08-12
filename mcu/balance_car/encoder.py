@@ -19,7 +19,7 @@ class HallEncoder:
         # 启动线程更新速度
         _thread.start_new_thread(self.calculate_speed, ())
 
-    def update_position(self, pin):  # 中断处理程序在调用时会传递一些参数（例如，触发的引脚），因此你需要在方法定义中添加一个参数来接收这些信息
+    def update_position(self, pin):
         current_a = self.pin_a.value()
         current_b = self.pin_b.value()
         
@@ -42,23 +42,30 @@ class HallEncoder:
                 self.speed = (self.position - self.last_position) / elapsed_time  # 计算速度
                 self.last_position = self.position
                 self.last_time = current_time
-            time.sleep(0.02)  # 每0.1秒更新一次速度
+            time.sleep(0.02)  # 每0.02秒更新一次速度
 
     def get_position(self):
         return self.position
 
     def get_speed(self):
         return self.speed
+    
+    def test_max_speed(self):
+        while True:
+            if self.position > 100000:
+                self.position = 0
+                self.last_position = 0
+                print("Max Speed:", self.speed)
 
 # 示例使用
 if __name__ == "__main__":
     
-    PWM = PWM(Pin(6), freq=500, duty=200)
+    PWM = PWM(Pin(5), freq=50, duty=100)
     # VCC = Pin(5,Pin.OUT,value=1) 
-    GND = Pin(5,Pin.OUT,value=0) 
+    GND = Pin(6,Pin.OUT,value=0) 
     
     encoder_l = HallEncoder(pin_a=2, pin_b=1)  # 根据实际连接的引脚修改
-    encoder_r = HallEncoder(pin_a=3, pin_b=4 )  # 根据实际连接的引脚修改  
+    encoder_r = HallEncoder(pin_a=3, pin_b=4)  # 根据实际连接的引脚修改  
     
     try:
         while True:

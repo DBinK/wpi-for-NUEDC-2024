@@ -1,16 +1,17 @@
 from time import sleep
 from machine import SoftI2C, Pin, PWM
 
-
 class Motor:
-    def __init__(self):
-        self.L_GO   = PWM(Pin(6), freq=100)
-        self.L_BACK = PWM(Pin(5), freq=100)
-        self.R_GO   = PWM(Pin(7), freq=100)
-        self.R_BACK = PWM(Pin(10), freq=100)
+    def __init__(self, L_G, L_B, R_G, R_B):
+        self.L_GO   = PWM(Pin(L_G), freq=100)
+        self.L_BACK = PWM(Pin(L_B), freq=100)
+        self.R_GO   = PWM(Pin(R_G), freq=100)
+        self.R_BACK = PWM(Pin(R_B), freq=100)
 
     def l_motor(self, speed):
-        speed = int(max(0, min(speed, 1023)))
+        
+        speed = int(max(-1023, min(speed, 1023)))
+        
         if speed > 0:
             self.L_GO.duty(speed)
             self.L_BACK.duty(0)
@@ -21,7 +22,9 @@ class Motor:
             self.L_GO.duty(0)
 
     def r_motor(self, speed):
-        speed = int(max(0, min(speed, 1023)))
+        
+        speed = int(max(-1023, min(speed, 1023)))
+        
         if speed > 0:
             self.R_GO.duty(speed)
             self.R_BACK.duty(0)
@@ -35,30 +38,38 @@ class Motor:
         self.l_motor(1)
         self.r_motor(1)
 
-    def Motor_Control(self, pixel):
-        if pixel == 0:
-            self.l_motor(0)
-            self.r_motor(0)
-        else:
-            self.l_motor(160 + pixel*0.4)
-            self.r_motor(160 - pixel*0.4)
+    def move(self, v, w):
+        """
+        @param v: 线速度
+        @param w: 转向角速度
+        """
+        v_l = v - w
+        v_r = v + w
+        
+        # print(f"v_l: {v_l}, v_r: {v_r}")
 
+        self.l_motor(v_l)
+        self.r_motor(v_r)
 
 if __name__ == '__main__':
 
-    motor = Motor()
+    motor = Motor(6,5,7,10)
 
     while True:
         print("r_motor forward")
-        motor.r_motor(200)
-        sleep(3)    
+        motor.r_motor(-200)
+        sleep(2)    
         
         print("l_motor forward")
         motor.l_motor(200)
-        sleep(3)
+        sleep(2)
         
-        print("Motor_Control")
-        motor.Motor_Control(200) 
+        print("stop")
+        motor.stop()
+        sleep(1)
+        
+        print("move")
+        motor.move(200, 80) 
         sleep(5)
 
         print("stop")
