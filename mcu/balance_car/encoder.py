@@ -12,7 +12,7 @@ class HallEncoder:
         self.pin_a.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.update_position)
         self.pin_b.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.update_position)
 
-    def update_position(self, pin):
+    def update_position(self):
         current_a = self.pin_a.value()
         current_b = self.pin_b.value()
         
@@ -29,10 +29,15 @@ class HallEncoder:
 
 # 示例使用
 if __name__ == "__main__":
-    encoder = HallEncoder(pin_a=2, pin_b=1)  # 根据实际连接的引脚修改
+    encoder_l = HallEncoder(pin_a=2, pin_b=1)  # 根据实际连接的引脚修改
+    
+    encoder_r = HallEncoder(pin_a=3, pin_b=4)  # 根据实际连接的引脚修改
+    
     try:
         while True:
-            print("当前编码器位置:", encoder.get_position())
+            print("Encoder L:", encoder_l.get_position())
+            print("Encoder R:", encoder_r.get_position())
             time.sleep(0.1)
+            
     except KeyboardInterrupt:
         print("程序结束")

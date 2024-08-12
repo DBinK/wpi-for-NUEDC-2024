@@ -101,11 +101,11 @@ class MPU6050Controller:
 
 # 主程序入口
 if __name__ == "__main__":
-    VCC = Pin(3, Pin.OUT, value=1)
-    GND = Pin(2, Pin.OUT, value=0)
+#     VCC = Pin(3, Pin.OUT, value=1)
+#     GND = Pin(2, Pin.OUT, value=0)
 
     time.sleep(2)
 
-    controller = MPU6050Controller(scl_pin=1, sda_pin=0)
+    controller = MPU6050Controller(scl_pin=9, sda_pin=8)
 
     controller.update()

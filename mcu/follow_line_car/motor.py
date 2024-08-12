@@ -4,10 +4,10 @@ from machine import SoftI2C, Pin, PWM
 
 class Motor:
     def __init__(self):
-        self.L_GO   = PWM(Pin(21), freq=100)
-        self.L_BACK = PWM(Pin(34), freq=100)
-        self.R_GO   = PWM(Pin(35), freq=100)
-        self.R_BACK = PWM(Pin(36), freq=100)
+        self.L_GO   = PWM(Pin(5), freq=100)
+        self.L_BACK = PWM(Pin(6), freq=100)
+        self.R_GO   = PWM(Pin(7), freq=100)
+        self.R_BACK = PWM(Pin(10), freq=100)
 
     def l_motor(self, speed):
         speed = int(max(0, min(speed, 1023)))

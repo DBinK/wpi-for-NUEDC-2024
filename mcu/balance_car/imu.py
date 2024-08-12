@@ -1,4 +1,3 @@
-import machine
 from machine import SoftI2C, Pin
 import math
 import time
@@ -25,8 +24,9 @@ class KalmanFilter:
         return self.angle
 
 class Accel:
-    def __init__(self, i2c, addr=0x68):
-        self.iic = i2c
+    def __init__(self, scl_pin, sda_pin, addr=0x68):
+
+        self.iic = SoftI2C(scl=Pin(scl_pin), sda=Pin(sda_pin))
         self.addr = addr
         self.iic.start()
         self.iic.writeto(self.addr, bytearray([107, 0]))  # 唤醒 MPU6050
@@ -103,16 +103,9 @@ class Accel:
 
 if __name__ == "__main__":
 
-
-    VCC = Pin(3,Pin.OUT,value=1) 
-    GND = Pin(2,Pin.OUT,value=0) 
-
-    time.sleep(1)
-
-    from time import sleep
-    i2c = machine.SoftI2C(scl=machine.Pin(1), sda=machine.Pin(0))
-    mpu = Accel(i2c)
+    mpu = Accel(9,8)
+    
     while True:
         roll, pitch, yaw = mpu.get_angles()
         print("Roll: {:.2f}, Pitch: {:.2f}, Yaw: {:.2f}".format(roll, pitch, yaw))
-        sleep(0.05)
+        time.sleep(0.05)
