@@ -1,5 +1,6 @@
-from machine import Pin
+from machine import Pin, PWM
 import time
+import _thread
 
 class HallEncoder:
     def __init__(self, pin_a, pin_b):
@@ -7,16 +8,25 @@ class HallEncoder:
         self.pin_b = Pin(pin_b, Pin.IN, Pin.PULL_UP)
         self.position = 0
         self.last_a = self.pin_a.value()
+        self.speed = 0  # 初始化速度
+        self.last_position = 0  # 上一个位置
+        self.last_time = time.ticks_ms()  # 上一次更新时间
         
         # 设置中断
         self.pin_a.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.update_position)
         self.pin_b.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.update_position)
 
-    def update_position(self):
+        # 启动线程更新速度
+        _thread.start_new_thread(self.calculate_speed, ())
+
+    def update_position(self, pin):  # 中断处理程序在调用时会传递一些参数（例如，触发的引脚），因此你需要在方法定义中添加一个参数来接收这些信息
         current_a = self.pin_a.value()
         current_b = self.pin_b.value()
         
         if current_a != self.last_a:  # 只有在A引脚状态变化时才处理
+            if abs(self.position) > 100000:  # 超过10000个脉冲，重置位置
+                self.position      = 0
+                self.last_position = 0
             if current_a == 1:  # A引脚上升沿
                 if current_b == 0:  # B引脚为低，顺时针旋转
                     self.position += 1
@@ -24,20 +34,37 @@ class HallEncoder:
                     self.position -= 1
             self.last_a = current_a
 
+    def calculate_speed(self):
+        while True:
+            current_time = time.ticks_ms()
+            elapsed_time = time.ticks_diff(current_time, self.last_time) / 1000.0  # 转换为秒
+            if elapsed_time > 0:
+                self.speed = (self.position - self.last_position) / elapsed_time  # 计算速度
+                self.last_position = self.position
+                self.last_time = current_time
+            time.sleep(0.02)  # 每0.1秒更新一次速度
+
     def get_position(self):
         return self.position
 
+    def get_speed(self):
+        return self.speed
+
 # 示例使用
 if __name__ == "__main__":
-    encoder_l = HallEncoder(pin_a=2, pin_b=1)  # 根据实际连接的引脚修改
     
-    encoder_r = HallEncoder(pin_a=3, pin_b=4)  # 根据实际连接的引脚修改
+    PWM = PWM(Pin(6), freq=500, duty=200)
+    # VCC = Pin(5,Pin.OUT,value=1) 
+    GND = Pin(5,Pin.OUT,value=0) 
+    
+    encoder_l = HallEncoder(pin_a=2, pin_b=1)  # 根据实际连接的引脚修改
+    encoder_r = HallEncoder(pin_a=3, pin_b=4 )  # 根据实际连接的引脚修改  
     
     try:
         while True:
-            print("Encoder L:", encoder_l.get_position())
-            print("Encoder R:", encoder_r.get_position())
-            time.sleep(0.1)
+            print("Encoder L Position:", encoder_l.get_position(), "Speed:", encoder_l.get_speed())
+            print("Encoder R Position:", encoder_r.get_position(), "Speed:", encoder_r.get_speed())
+            time.sleep(0.02)
             
     except KeyboardInterrupt:
         print("程序结束")
