@@ -6,15 +6,15 @@
 '''
 import network,time
 from machine import Pin
-from neopixel import NeoPixel
 
 # 释放所有GPIO, 断电重上电不再失控
 def release_all_GPIO():
     for i in range(0, 48):
         try:
-            Pin(i).off()
+            GND = Pin(i, Pin.OUT, value=0)
+            print(f"releasing gpio {i}")
         except:
-            pass
+            continue
 
 release_all_GPIO()
 
@@ -22,33 +22,11 @@ release_all_GPIO()
 LED=Pin(8,Pin.OUT) #构建led对象，GPIO46,输出
 LED.value(1) #点亮LED，也可以使用led.on()
 
-def rgb(value):
-    BLACK =(0,0,0)
-    RED   =(10,0,0)
-    GREEN =(0,10,0)
-    BLUE  =(0,0,1)
-
-    pin = Pin(48, Pin.OUT)
-    np = NeoPixel(pin, 10)
-
-    def write(value):
-        np.fill(value)
-        np.write()
-
-    if value == 0:
-        write(BLACK)
-    elif value == 1:
-        write(BLUE)
-    elif value == 2:
-        write(GREEN)
-    elif value == 3:
-        write(RED)
         
 #WIFI连接函数
 def WIFI_Connect():
 
     # WIFI_LED=Pin(46, Pin.OUT) #初始化WIFI指示灯
-    
 
     wlan = network.WLAN(network.STA_IF) #STA模式
     wlan.active(True)                   #激活接口
@@ -57,10 +35,10 @@ def WIFI_Connect():
     if not wlan.isconnected():
         print('connecting to network...')
         # wlan.connect('DT46', '12345678') #输入WIFI账号密码
-        # wlan.connect('ovo', '00000000') #输入WIFI账号密码
+        wlan.connect('ovo_Wi-Fi5', '00000000') #输入WIFI账号密码
         # wlan.connect('K40', '00000000') #输入WIFI账号密码
         # wlan.connect('mifi', '00000000') #输入WIFI账号密码
-        wlan.connect('CMCC-3栋302', 'JCSC12341234') #输入WIFI账号密码
+        # wlan.connect('CMCC-3栋302', 'JCSC12341234') #输入WIFI账号密码
 
         while not wlan.isconnected():
 

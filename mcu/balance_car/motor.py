@@ -44,8 +44,11 @@ class Motor:
             self.R_GO.duty(0)
 
     def stop(self):
-        self.l_motor(1)
-        self.r_motor(1)
+        self.L_GO.duty(0)
+        self.L_BACK.duty(0)
+        self.R_GO.duty(0)
+        self.R_BACK.duty(0)
+        
 
     def move(self, v, w):
         """
@@ -62,15 +65,15 @@ class Motor:
 
 if __name__ == '__main__':
 
-    motor = Motor(6,5,7,10)
+    motor = Motor(3,4,2,1)
 
     while True:
         print("r_motor forward")
-        motor.r_motor(-200)
+        motor.r_motor(200)
         sleep(2)    
         
         print("l_motor forward")
-        motor.l_motor(200)
+        motor.l_motor(100)
         sleep(2)
         
         print("stop")

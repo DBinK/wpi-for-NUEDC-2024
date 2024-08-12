@@ -64,8 +64,9 @@ if __name__ == "__main__":
     # VCC = Pin(5,Pin.OUT,value=1) 
     GND = Pin(6,Pin.OUT,value=0) 
     
-    encoder_l = HallEncoder(pin_a=2, pin_b=1)  # 根据实际连接的引脚修改
-    encoder_r = HallEncoder(pin_a=3, pin_b=4)  # 根据实际连接的引脚修改  
+
+    encoder_l = HallEncoder(7,10)
+    encoder_r = HallEncoder(6, 5)
     
     try:
         while True:
