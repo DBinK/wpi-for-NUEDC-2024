@@ -2,35 +2,44 @@ from time import sleep
 from machine import SoftI2C, Pin, PWM
 
 class Motor:
-    def __init__(self, L_G, L_B, R_G, R_B):
+    def __init__(self, L_G, L_B, R_G, R_B, BASE_SPEED=0):
         self.L_GO   = PWM(Pin(L_G), freq=100)
         self.L_BACK = PWM(Pin(L_B), freq=100)
         self.R_GO   = PWM(Pin(R_G), freq=100)
         self.R_BACK = PWM(Pin(R_B), freq=100)
+        self.BASE_SPEED = BASE_SPEED
 
     def l_motor(self, speed):
         
-        speed = int(max(-1023, min(speed, 1023)))
-        
         if speed > 0:
+            speed = speed + self.BASE_SPEED
+            speed = int(max(-1023, min(speed, 1023)))
             self.L_GO.duty(speed)
             self.L_BACK.duty(0)
+
         elif speed < 0:
+            speed = speed - self.BASE_SPEED
+            speed = int(max(-1023, min(speed, 1023)))
             self.L_GO.duty(0)
             self.L_BACK.duty(-speed)
+
         else:
             self.L_GO.duty(0)
 
     def r_motor(self, speed):
         
-        speed = int(max(-1023, min(speed, 1023)))
-        
         if speed > 0:
+            speed = speed + self.BASE_SPEED
+            speed = int(max(-1023, min(speed, 1023)))
             self.R_GO.duty(speed)
             self.R_BACK.duty(0)
+
         elif speed < 0:
+            speed = speed - self.BASE_SPEED
+            speed = int(max(-1023, min(speed, 1023)))
             self.R_GO.duty(0)
             self.R_BACK.duty(-speed)
+            
         else:
             self.R_GO.duty(0)
 

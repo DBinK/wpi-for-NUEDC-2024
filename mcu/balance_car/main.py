@@ -7,7 +7,7 @@ from encoder import HallEncoder
 from motor import Motor
 
 IMU_OFFSET = 0.0
-BASE_PWM = 100
+BASE_PWM = 300
 
 # 创建BLE对象
 ble  = bluetooth.BLE() # 构建BLE对象
@@ -30,7 +30,7 @@ encoder_l = HallEncoder(pin_a=2, pin_b=1)
 encoder_r = HallEncoder(pin_a=3, pin_b=4)  
 
 # 创建电机对象
-motor = Motor()
+motor = Motor(6,5,7,10,BASE_PWM)
 
 while True:
     roll, pitch, yaw = imu.get_angles()
@@ -40,13 +40,16 @@ while True:
     speed_l = encoder_l.get_speed()
     speed_r = encoder_r.get_speed()
 
-    v = (roll_fix/90) * 1023 + BASE_PWM
-
+    v = (roll_fix/90) * 1023
     w = 0
 
     motor.move(v, w)
 
-    print(f"{roll_fix}, {v}, {w}, {speed_l}, {speed_r}")
+    uart_msg = f"{roll_fix}, {v}, {w}, {speed_l}, {speed_r}\n"
+    ble_msg  = f"{roll_fix}, {v}, {w}, {speed_l}, {speed_r}\n"
+
+    print(uart_msg)
+    peer.send(ble_msg)
 
     time.sleep(0.1)
 
