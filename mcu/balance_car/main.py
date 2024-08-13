@@ -8,7 +8,7 @@ from motor import Motor
 from pid import PID
 
 IMU_OFFSET = 0.0
-BASE_PWM = 90
+BASE_PWM = 50
 
 # 创建传感器对象
 imu = Accel(9, 8)
@@ -19,7 +19,7 @@ encoder_r = HallEncoder(6, 5)
 motor = Motor(3, 4, 2, 1, BASE_PWM)
 
 # 创建PID对象
-pid = PID(kp=0.8, ki=0, kd=0.1, setpoint=0, output_limits=(-1023, 1023))
+pid = PID(kp=0.8, ki=0, kd=0.001, setpoint=0, output_limits=(-1023, 1023))
 
 # 创建BLE对象
 ble = bluetooth.BLE()  # 构建BLE对象
