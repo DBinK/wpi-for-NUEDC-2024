@@ -92,16 +92,29 @@ if __name__ == '__main__':
     encoder_r = HallEncoder(6, 5)
 
 
-    pid_l = PID(0.8, 0.0, 0.0, setpoint=0)
-    pid_r = PID(0.8, 0.0, 0.0, setpoint=0)
+    pid_l = PID(0.0000001, 0.0, 0.0, setpoint=0)
+    
+    pid_r = PID(1.1, 0.1, 0.001, setpoint=0)
 
     motor = Motor(3,4,2,1)
 
-    pid_l.setpoint = 1000
-    pid_r.setpoint = 1000
+    pid_l.setpoint = 800
+    pid_r.setpoint = 800
 
     start = time.time()
-    while time.time() - start < 10:
+    while time.time() - start < 100:
+        
+        if time.time() - start > 5:
+            pid_r.setpoint = 1000        
+
+        if time.time() - start > 10:
+            pid_r.setpoint = 1500        
+        
+        if time.time() - start > 15:
+            pid_r.setpoint = 2000
+        
+        if time.time() - start > 15:
+            pid_r.setpoint = 1000
 
         v_l_now = encoder_l.get_speed()
         v_r_now = encoder_r.get_speed()
@@ -109,24 +122,7 @@ if __name__ == '__main__':
         v_l_pwm = pid_l.update(v_l_now)
         v_r_pwm = pid_r.update(v_r_now)
         
-        print(f"v_l_now: {v_l_now}, v_r_now: {v_r_now}, v_l: {v_l_pwm}, v_r: {v_r_pwm}")
-        motor.motor(v_l_pwm, v_r_pwm)
-
-        time.sleep(0.1)
-
-    pid_l.setpoint = 1500
-    pid_r.setpoint = 1500
-
-    start = time.time()
-    while time.time() - start < 10:
-
-        v_l_now = encoder_l.get_speed()
-        v_r_now = encoder_r.get_speed()
-        
-        v_l_pwm = pid_l.update(v_l_now)
-        v_r_pwm = pid_r.update(v_r_now)
-        
-        print(f"v_l_now: {v_l_now}, v_r_now: {v_r_now}, v_l: {v_l_pwm}, v_r: {v_r_pwm}")
+        print(f"trage: {pid_r.setpoint}, v_r_now: {v_r_now}")
         motor.motor(v_l_pwm, v_r_pwm)
 
         time.sleep(0.1)
