@@ -7,6 +7,7 @@ from encoder import HallEncoder
 from motor import Motor
 from pid import PID
 
+
 IMU_OFFSET = 0.0
 BASE_PWM = 50
 
@@ -29,12 +30,11 @@ peer = ble_simple_peripheral.BLESimplePeripheral(ble, name="WalnutPi")
 def on_rx(msg):
     global text
 
-    text = msg.decode("ascii")
+    #text = msg.decode("utf-8")
 
     print("RX:", msg)  # 打印接收到的数据,数据格式为字节数组。
     peer.send("I got: ")
-    peer.send(text)
-
+    peer.send(msg)
 
 peer.on_write(on_rx)  # 从机接收回调函数，收到数据会进入on_rx函数。
 
@@ -47,7 +47,7 @@ while True:
 
     if abs(pitch) > 8 or abs(roll) > 45:
         motor.stop()
-        print(f"检测到跌倒, 关闭电机, roll = {roll}, pitch = {pitch}")
+        # print(f"检测到跌倒, 关闭电机, roll = {roll}, pitch = {pitch}")
         continue
 
     roll_fix = roll - IMU_OFFSET
@@ -57,13 +57,12 @@ while True:
 
     v_linear_pid = -pid.update(v_linear)
 
-    motor.move(v_linear_pid, w_angular)
+    motor.motion(v_linear_pid, w_angular)
 
-    uart_msg = f"{roll_fix}, {v_linear}, {w_angular}, {speed_l}, {speed_r}\n"
+    tcp_msg = f"{roll_fix}, {v_linear}, {w_angular}, {speed_l}, {speed_r}\n"
 
-    ble_msg  = f"roll_fix: {roll_fix}, v: {v_linear}, w: {w_angular}, speed_l: {speed_l}, speed_r: {speed_r}\n"
+    # print(uart_msg)
 
-    print(uart_msg)
-    peer.send(ble_msg)
+    # peer.send(status_msg)
 
     time.sleep(0.1)

@@ -35,7 +35,8 @@ def WIFI_Connect():
     if not wlan.isconnected():
         print('connecting to network...')
         # wlan.connect('DT46', '12345678') #输入WIFI账号密码
-        wlan.connect('ovo_Wi-Fi5', '00000000') #输入WIFI账号密码
+        # wlan.connect('ovo_Wi-Fi5', '00000000') #输入WIFI账号密码
+        wlan.connect('GD', '00000000') #输入WIFI账号密码
         # wlan.connect('K40', '00000000') #输入WIFI账号密码
         # wlan.connect('mifi', '00000000') #输入WIFI账号密码
         # wlan.connect('CMCC-3栋302', 'JCSC12341234') #输入WIFI账号密码
@@ -49,7 +50,7 @@ def WIFI_Connect():
             time.sleep_ms(300)
 
             #超时判断,15秒没连接成功判定为超时
-            if time.time()-start_time > 5 :
+            if time.time()-start_time > 15 :
                 print('WIFI Connected Timeout!')
                 break
 
