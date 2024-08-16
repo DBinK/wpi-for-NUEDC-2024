@@ -50,18 +50,18 @@ while True:
         # print(f"检测到跌倒, 关闭电机, roll = {roll}, pitch = {pitch}")
         continue
 
-    roll_fix = roll - IMU_OFFSET
+    angle = roll - IMU_OFFSET
 
-    v_linear = (roll_fix / 90) * 1023
-    w_angular = 0
+    v_pwm = (angle / 90) * 1023
+    w_pwm = 0
 
-    v_linear_pid = -pid.update(v_linear)
+    v_pwm_pid = -pid.update(v_pwm)
 
-    motor.motion(v_linear_pid, w_angular)
+    motor.motion(v_pwm_pid, w_pwm)
 
-    tcp_msg = f"{roll_fix}, {v_linear}, {w_angular}, {speed_l}, {speed_r}\n"
+    vofa_msg = f"{angle}, {speed_l}, {speed_r}, {v_pwm}, {w_pwm}\n"
 
-    # print(uart_msg)
+    print(vofa_msg)
 
     # peer.send(status_msg)
 
