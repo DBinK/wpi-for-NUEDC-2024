@@ -1,31 +1,25 @@
 import time
 from machine import UART
-import bluetooth, ble_simple_peripheral
+import bluetooth, ble_simple_peripheral, usocket, _thread
 
 from imu import Accel
 from encoder import HallEncoder
 from motor import Motor
 from pid import PID
-
+from wifi import WIFI_Connect
 
 IMU_OFFSET = 0.0
 BASE_PWM = 50
 
-# 创建传感器对象
 imu = Accel(9, 8)
 encoder_l = HallEncoder(7, 10)
 encoder_r = HallEncoder(6, 5)
-
-# 创建电机对象
 motor = Motor(3, 4, 2, 1, BASE_PWM)
 
-# 创建PID对象
 pid = PID(kp=0.8, ki=0, kd=0.001, setpoint=0, output_limits=(-1023, 1023))
 
-# 创建BLE对象
 ble = bluetooth.BLE()  # 构建BLE对象
 peer = ble_simple_peripheral.BLESimplePeripheral(ble, name="WalnutPi")
-
 
 def on_rx(msg):
     global text
@@ -38,6 +32,25 @@ def on_rx(msg):
 
 peer.on_write(on_rx)  # 从机接收回调函数，收到数据会进入on_rx函数。
 
+tcp = usocket.socket()
+tcp.connect(('192.168.1.19', 1234))  # 服务器IP和端口
+tcp.send(b'Hello WalnutPi!')
+
+def tcp_thread():
+    global tcp
+    while True:
+        try:
+            text = tcp.recv(128)  # 单次最多接收128字节
+            if text:
+                print("RX:", text)
+                tcp.send(b'I got: ' + text)
+        except Exception as e:
+            print("TCP Error:", e)
+            break
+
+# 启动TCP线程
+_thread.start_new_thread(tcp_thread, ())
+    
 
 while True:
     roll, pitch, _ = imu.get_angles()
@@ -61,8 +74,14 @@ while True:
 
     tcp_msg = f"{roll_fix}, {v_linear}, {w_angular}, {speed_l}, {speed_r}\n"
 
-    # print(uart_msg)
+    print(tcp_msg)
 
     # peer.send(status_msg)
 
+    try:
+        tcp.send(tcp_msg)#.encode('utf-8'))
+    except Exception as e:
+        print("Send Error:", e)
+
     time.sleep(0.1)
+
