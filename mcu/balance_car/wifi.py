@@ -48,16 +48,22 @@ def WIFI_Connect():
     else:
         return False
 
-
+def check_network():
+    if network.WLAN(network.STA_IF).isconnected():
+        return True
+    else:
+        return False
 
 if __name__ == '__main__':
 
+    WIFI_Connect()
+    
     #判断WIFI是否连接成功
-    if WIFI_Connect():
+    if check_network():
 
         #创建socket连接TCP类似，连接成功后发送“Hello WalnutPi！”给服务器。
         s=usocket.socket()
-        addr=('192.168.1.16',1234) #服务器IP和端口
+        addr=('192.168.1.15',1234) #服务器IP和端口
         s.connect(addr)
         s.send('Hello WalnutPi!')
 
