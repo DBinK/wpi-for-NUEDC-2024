@@ -9,7 +9,7 @@ from pid import PID
 from wifi import check_network
 
 IMU_OFFSET = 0.0
-BASE_PWM = 50
+BASE_PWM = 60
 
 imu = Accel(9, 8)
 encoder_l = HallEncoder(7, 10)
@@ -34,7 +34,7 @@ peer.on_write(on_rx)  # 从机接收回调函数，收到数据会进入on_rx函
 
 try:
     tcp = usocket.socket()
-    tcp.connect(('192.168.1.15', 1234))  # 服务器IP和端口
+    tcp.connect(('192.168.1.6', 1234))  # 服务器IP和端口
     tcp.send(b'Hello WalnutPi!')
 
 except Exception as e:
@@ -60,7 +60,7 @@ def tcp_thread():
                     pid.kd = float(value)
                 elif key == 'offset':
                     IMU_OFFSET = float(value)
-                elif key == 'pwm':
+                elif key == 'BASE_PWM':
                     BASE_PWM = int(value)
                     motor.BASE_SPEED = BASE_PWM         
                 
@@ -70,20 +70,21 @@ def tcp_thread():
 
 # 启动TCP线程
 _thread.start_new_thread(tcp_thread, ())
-    
+
+delay_s_max = 0
 
 while True:
 
     start = time.ticks_us()
 
-    roll, pitch, _ = imu.get_angles()
+    roll, pitch = imu.get_angles()
 
     speed_l = encoder_l.get_speed()
     speed_r = encoder_r.get_speed()
 
-    if abs(pitch) > 8 or abs(roll) > 60:
+    if abs(pitch) > 15 or abs(roll) > 60:
         motor.stop()
-        # print(f"检测到跌倒, 关闭电机, roll = {roll}, pitch = {pitch}")
+        print(f"检测到跌倒, 关闭电机, roll = {roll}, pitch = {pitch}")
         continue
 
     angle = roll - IMU_OFFSET
@@ -106,10 +107,12 @@ while True:
     except Exception as e:
         print("Send Error:", e)
 
-    time.sleep(0.01)
+    time.sleep(0.0001)
 
     end = time.ticks_us()
 
     delay_s = (end - start) / 1000000
 
-    print(f"delay: {delay_s}")
+    delay_s_max = max(delay_s_max, delay_s)
+
+    print(f"delay: {delay_s}, delay_s_max: {delay_s_max}")

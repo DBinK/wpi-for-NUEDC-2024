@@ -70,6 +70,17 @@ class Accel:
         vals["GyY"] = self.bytes_toint(raw_ints[10], raw_ints[11])
         vals["GyZ"] = self.bytes_toint(raw_ints[12], raw_ints[13])
         return vals  # 返回原始值
+    
+    def window_filter(value, values, window_size=50):
+    # 将值添加到列表中
+        values.append(value)
+
+        # 如果列表长度超过窗口大小，则移除最旧的元素
+        if len(values) > window_size:
+            values.pop(0)
+
+        # 返回平均值
+        return sum(values) / len(values)
 
     def update_angles(self):
         while True:
@@ -97,8 +108,11 @@ class Accel:
             else:
                 pitch = 0
 
-            self.roll = self.kalmanX.get_angle(roll, gyro_x, dt)
-            self.pitch = self.kalmanY.get_angle(pitch, gyro_y, dt)
+            self.roll = roll
+            self.pitch = pitch
+
+            # self.roll = self.kalmanX.get_angle(roll, gyro_x, dt)
+            # self.pitch = self.kalmanY.get_angle(pitch, gyro_y, dt)
 
             # 计算yaw 
             # if acc_x != 0:
@@ -108,10 +122,10 @@ class Accel:
 
             # self.yaw = self.kalmanZ.get_angle(yaw, gyro_z, dt)
 
-            time.sleep(0.01)  # 每次更新间隔
+            time.sleep(0.005)  # 每次更新间隔
 
     def get_angles(self):
-        return self.roll, self.pitch, self.yaw
+        return self.roll, self.pitch
 
 if __name__ == "__main__":
     mpu = Accel(9, 8)
@@ -119,4 +133,4 @@ if __name__ == "__main__":
     while True:
         roll, pitch, _ = mpu.get_angles()
         print("Roll: {:.2f}, Pitch: {:.2f}".format(roll, pitch))
-        time.sleep(0.05)
+        time.sleep(0.02)
