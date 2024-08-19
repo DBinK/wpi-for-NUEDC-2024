@@ -96,7 +96,7 @@ while True:
 
     motor.motion(v_pwm_pid, w_pwm)
 
-    vofa_msg = f"{angle}, {speed_l}, {speed_r}, {v_pwm}, {w_pwm}\n"
+    vofa_msg = f"{angle}, {speed_l}, {speed_r}, {v_pwm}, {w_pwm},  {motor.BASE_SPEED}, {pid.kp}, {pid.ki}, {pid.kd} \n"
 
     print(vofa_msg)
 
