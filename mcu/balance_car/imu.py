@@ -47,6 +47,7 @@ class Accel:
 
         # 初始化时间
         self.last_time = time.ticks_ms()
+        self.dt = 0.0
 
     def get_raw_values(self):
         self.iic.start()
@@ -85,7 +86,7 @@ class Accel:
     def update_angles(self):
         while True:
             current_time = time.ticks_ms()  # 获取当前时间
-            dt = time.ticks_diff(current_time, self.last_time) / 1000.0  # 计算时间差并转换为秒
+            self.dt = time.ticks_diff(current_time, self.last_time) / 1000.0  # 计算时间差并转换为秒
             self.last_time = current_time  # 更新上一次时间
 
             vals = self.get_values()
@@ -108,11 +109,11 @@ class Accel:
             else:
                 pitch = 0
 
-            self.roll = roll
-            self.pitch = pitch
+#             self.roll = roll
+#             self.pitch = pitch
 
-            # self.roll = self.kalmanX.get_angle(roll, gyro_x, dt)
-            # self.pitch = self.kalmanY.get_angle(pitch, gyro_y, dt)
+            self.roll = self.kalmanX.get_angle(roll, gyro_x, dt)
+            self.pitch = self.kalmanY.get_angle(pitch, gyro_y, dt)
 
             # 计算yaw 
             # if acc_x != 0:
@@ -122,15 +123,15 @@ class Accel:
 
             # self.yaw = self.kalmanZ.get_angle(yaw, gyro_z, dt)
 
-            time.sleep(0.005)  # 每次更新间隔
+            time.sleep(0.000005)  # 每次更新间隔
 
     def get_angles(self):
-        return self.roll, self.pitch
+        return self.roll, self.pitch, self.dt
 
 if __name__ == "__main__":
     mpu = Accel(9, 8)
     
     while True:
-        roll, pitch = mpu.get_angles()
-        print("Roll: {:.2f}, Pitch: {:.2f}".format(roll, pitch))
+        roll, pitch, dt = mpu.get_angles()
+        print("Roll: {:.2f}, Pitch: {:.2f}, dt: {:.6f}".format(roll, pitch,dt))
         time.sleep(0.01)

@@ -33,10 +33,10 @@ def WIFI_Connect():
 
     if not wlan.isconnected():
         print('connecting to network...')
-        # wlan.connect('DT46', '12345678') #输入WIFI账号密码
+        wlan.connect('DT46', '12345678') #输入WIFI账号密码
         # wlan.connect('ovo', '00000000') #输入WIFI账号密码
         # wlan.connect('GD', '00000000') #输入WIFI账号密码
-        wlan.connect('K40', '00000000') #输入WIFI账号密码
+        # wlan.connect('K40', '00000000') #输入WIFI账号密码
         #wlan.connect('mifi', '00000000') #输入WIFI账号密码
 
         while not wlan.isconnected():
