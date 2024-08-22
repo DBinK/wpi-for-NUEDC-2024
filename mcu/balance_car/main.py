@@ -1,40 +1,26 @@
 import time
+import usocket
+import _thread
 from machine import UART
-import bluetooth, ble_simple_peripheral, usocket, _thread
 
 from imu import Accel
 from encoder import HallEncoder
 from motor import Motor
 from pid import PID
-from wifi import check_network
 
 IMU_OFFSET = 0.0
 BASE_PWM = 60
 
 imu = Accel(9, 8)
-encoder_l = HallEncoder(7, 10)
-encoder_r = HallEncoder(6, 5)
-motor = Motor(3, 4, 2, 1, BASE_PWM)
+encoder_l = HallEncoder(4,6)
+encoder_r = HallEncoder(2,1)
+motor = Motor(33,35,18,16, BASE_PWM)
 
-pid = PID(kp=0.8, ki=0, kd=0.0, setpoint=0, output_limits=(-1023, 1023))
-
-ble = bluetooth.BLE()  # 构建BLE对象
-peer = ble_simple_peripheral.BLESimplePeripheral(ble, name="WalnutPi")
-
-def on_rx(msg):
-    global text
-
-    #text = msg.decode("utf-8")
-
-    print("RX:", msg)  # 打印接收到的数据,数据格式为字节数组。
-    peer.send("I got: ")
-    peer.send(msg)
-
-peer.on_write(on_rx)  # 从机接收回调函数，收到数据会进入on_rx函数。
+pid = PID(kp=0.6, ki=0, kd=0.0, setpoint=0, output_limits=(-1023, 1023))
 
 try:
     tcp = usocket.socket()
-    tcp.connect(('192.168.1.6', 1234))  # 服务器IP和端口
+    tcp.connect(('192.168.43.240', 1347))  # 服务器IP和端口
     tcp.send(b'Hello WalnutPi!')
 
 except Exception as e:
@@ -107,7 +93,7 @@ while True:
     except Exception as e:
         print("Send Error:", e)
 
-    time.sleep(0.0001)
+    time.sleep(0.01)
 
     end = time.ticks_us()
 

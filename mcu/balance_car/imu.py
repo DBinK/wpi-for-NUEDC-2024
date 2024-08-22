@@ -131,6 +131,6 @@ if __name__ == "__main__":
     mpu = Accel(9, 8)
     
     while True:
-        roll, pitch, _ = mpu.get_angles()
+        roll, pitch = mpu.get_angles()
         print("Roll: {:.2f}, Pitch: {:.2f}".format(roll, pitch))
-        time.sleep(0.02)
+        time.sleep(0.01)

@@ -60,13 +60,13 @@ class HallEncoder:
 # 示例使用
 if __name__ == "__main__":
     
-    PWM = PWM(Pin(5), freq=50, duty=100)
-    # VCC = Pin(5,Pin.OUT,value=1) 
-    GND = Pin(6,Pin.OUT,value=0) 
+#     PWM = PWM(Pin(5), freq=50, duty=100)
+#     # VCC = Pin(5,Pin.OUT,value=1) 
+#     GND = Pin(6,Pin.OUT,value=0) 
     
 
-    encoder_l = HallEncoder(7,10)
-    encoder_r = HallEncoder(6, 5)
+    encoder_l = HallEncoder(4,6)
+    encoder_r = HallEncoder(2,1)
     
     try:
         while True:

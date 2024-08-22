@@ -59,31 +59,34 @@ class Motor:
         self.R_GO.duty(0)
         self.R_BACK.duty(0)
 
-    def test():
-        motor = Motor(3,4,2,1)
-        while True:
-            print("r_motor forward")
-            motor.r_motor(200)
-            time.sleep(2)    
-            
-            print("l_motor forward")
-            motor.l_motor(100)
-            time.sleep(2)
-            
-            print("stop")
-            motor.stop()
-            time.sleep(1)
-            
-            print("move")
-            motor.move(200, 80) 
-            time.sleep(5)
+def test():
+    motor = Motor(33,35,18,16)
+    while True:
+        
+        print("l_motor forward")
+        motor.l_motor(100)
+        time.sleep(2)
+        
+        print("r_motor forward")
+        motor.r_motor(200)
+        time.sleep(2)    
+        
+        print("stop")
+        motor.stop()
+        time.sleep(1)
+        
+        print("move")
+        motor.move(200, 80) 
+        time.sleep(5)
 
-            print("stop")
-            motor.stop()
-            time.sleep(3)
+        print("stop")
+        motor.stop()
+        time.sleep(3)
 
 
 if __name__ == '__main__':
+    
+    test()
 
     from encoder import HallEncoder
     from pid import PID
