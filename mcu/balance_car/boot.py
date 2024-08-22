@@ -27,8 +27,6 @@ LED.value(1) #点亮LED，也可以使用led.on()
 #WIFI连接函数
 def WIFI_Connect():
 
-    # WIFI_LED=Pin(46, Pin.OUT) #初始化WIFI指示灯
-
     wlan = network.WLAN(network.STA_IF) #STA模式
     wlan.active(True)                   #激活接口
     start_time=time.time()              #记录时间做超时判断
